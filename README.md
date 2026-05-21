@@ -1,7 +1,5 @@
 # n8n Automation Workspaces
 
-[Bahasa Indonesia](./README.id.md) 🇮🇩
-
 Welcome to the central repository for managing **n8n-based automation workflows**. This repository is designed with a multi-workspace structure to simplify management, version tracking, and collaboration for business automation workflows development.
 
 ---

@@ -1,7 +1,5 @@
 # Blog Content Engine v3.3.1
 
-[Bahasa Indonesia](./README.id.md) 🇮🇩
-
 **Blog Content Engine** is an SEO-optimized B2B blog article generation automation system that integrates **n8n**, **Qdrant Vector Database (RAG)**, and **Google Gemini AI**. This project is designed to produce high-quality, professionally-structured, and factual articles, completely free of AI hallucinations by referencing real company product documentation and knowledge bases.
 
 ---
