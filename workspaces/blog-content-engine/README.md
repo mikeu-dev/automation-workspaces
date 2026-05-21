@@ -1,69 +1,71 @@
 # Blog Content Engine v3.3.1
 
-**Blog Content Engine** adalah sistem otomatisasi pembuatan konten artikel blog B2B berbasis SEO yang mengintegrasikan **n8n**, **Qdrant Vector Database (RAG)**, dan **Google Gemini AI**. Proyek ini dirancang untuk menghasilkan artikel berkualitas tinggi yang akurat, terstruktur secara profesional, dan bebas dari halusinasi kecerdasan buatan karena merujuk langsung pada dokumen pengetahuan bisnis riil.
+[Bahasa Indonesia](./README.id.md) 🇮🇩
+
+**Blog Content Engine** is an SEO-optimized B2B blog article generation automation system that integrates **n8n**, **Qdrant Vector Database (RAG)**, and **Google Gemini AI**. This project is designed to produce high-quality, professionally-structured, and factual articles, completely free of AI hallucinations by referencing real company product documentation and knowledge bases.
 
 ---
 
-## Komponen & Arsitektur Utama
+## Core Components & Architecture
 
-Sistem ini didukung oleh tiga pilar teknologi utama:
+The system is powered by three main technological pillars:
 
-1.  **n8n (Workflow Automation)**: Mengatur seluruh orkestrasi alur kerja, mulai dari penjadwalan (*cron*), pemanggilan API, pemrosesan data dengan JavaScript, hingga mekanisme *retry-recovery* otomatis.
-2.  **Qdrant Vector Database**: Bertindak sebagai basis pengetahuan (*knowledge base*) tempat dokumen-dokumen produk ERP disimpan dalam bentuk vektor untuk mendukung fungsionalitas **Retrieval-Augmented Generation (RAG)**.
-3.  **Google Gemini (Gemini 2.5 Flash & Gemini Embedding)**: Digunakan untuk menghasilkan representasi vektor dokumen (*embedding*) dan melakukan generasi kreatif berupa judul, outline, serta artikel blog dengan format HTML bersih.
+1.  **n8n (Workflow Automation)**: Orchestrates the entire execution flow—from cron scheduling, API requests, Javascript-based data processing, to automated retry-recovery logic.
+2.  **Qdrant Vector Database**: Acts as the corporate knowledge base storing ERP product documents as high-dimensional vectors to enable highly accurate **Retrieval-Augmented Generation (RAG)**.
+3.  **Google Gemini (Gemini 2.5 Flash & Gemini Embedding)**: Used for document vector representation (*embedding*) and creative generation of SEO titles, structures, outlines, and HTML-compliant blog articles.
 
 ---
 
-## Bagan Alur Kerja (Workflow Diagram)
+## Workflow Diagram
 
-Alur otomatisasi dalam workspace ini dirancang dengan tingkat keandalan yang tinggi menggunakan gerbang validasi ganda untuk judul dan artikel:
+The automation flow inside this workspace is designed with high fault tolerance, utilizing a double-pass validation gateway for both titles and articles:
 
 ```mermaid
 flowchart TD
-    %% Subgraph Fase 1: Inisiasi & RAG
-    subgraph Fase_1[Fase 1: Inisiasi & RAG]
-        Manual([Mulai: Manual Trigger])
-        Cron([Mulai: Cron Trigger])
+    %% Subgraph Phase 1: Initiation & RAG
+    subgraph Phase_1[Phase 1: Initiation & RAG]
+        Manual([Start: Manual Trigger])
+        Cron([Start: Cron Trigger])
         Niche[Set Niche & Target]
         Embed[Generate Gemini Embedding-001]
-        Qdrant[(Qdrant: Cari Dokumen RAG)]
-        Context[/Format Konteks Dokumen/]
+        Qdrant[(Qdrant: Search RAG Documents)]
+        Context[/Format Document Context/]
     end
 
-    %% Subgraph Fase 2: Generasi & Validasi Judul
-    subgraph Fase_2[Fase 2: Generasi & Validasi Judul]
-        GenTitle[Buat Judul & Outline dengan Gemini]
-        ParseTitle[Parse Hasil Judul & Outline]
-        ValTitle{Apakah Judul Valid?<br>len >= 10 atau attempts >= 3?}
+    %% Subgraph Phase 2: Title Generation & Validation
+    subgraph Phase_2[Phase 2: Title Generation & Validation]
+        GenTitle[Generate Title & Outline with Gemini]
+        ParseTitle[Parse Title & Outline]
+        ValTitle{Is Title Valid?<br>len >= 10 or attempts >= 3?}
         IncTitle[Increment Title Attempts]
-        RetryTitle[Retry Generate Title & Outline]
+        RetryTitle[Retry Title & Outline Generation]
     end
 
-    %% Subgraph Fase 3: Pengecekan Duplikat
-    subgraph Fase_3[Fase 3: Pengecekan Duplikat]
-        GetBlogs[/Ambil Daftar Blog dari API/]
-        CheckDup[Periksa Judul Duplikat]
-        IsDup{Apakah Duplikat?}
-        StopDup([Selesai: Artikel Duplikat])
+    %% Subgraph Phase 3: Duplicate Check
+    subgraph Phase_3[Phase 3: Duplicate Check]
+        GetBlogs[/Fetch Blogs List from API/]
+        CheckDup[Check Duplicate Title]
+        IsDup{Is Duplicate?}
+        StopDup([End: Duplicate Post])
     end
 
-    %% Subgraph Fase 4: Generasi & Validasi Artikel
-    subgraph Fase_4[Fase 4: Generasi & Validasi Artikel]
-        GenArt[Buat Artikel dengan Gemini]
-        ParseArt[Parse Konten & Format HTML]
-        ValArt{Apakah Artikel Valid?<br>len >= 300 & slug >= 10 atau attempts >= 3?}
-        IncArt[Increment Artikel Attempts]
-        RetryArt[Retry Generate Artikel dengan Umpan Balik Error]
+    %% Subgraph Phase 4: Article Generation & Validation
+    subgraph Phase_4[Phase 4: Article Generation & Validation]
+        GenArt[Generate Article with Gemini]
+        ParseArt[Parse HTML Format & Content]
+        ValArt{Is Article Valid?<br>len >= 300 & slug >= 10 or attempts >= 3?}
+        IncArt[Increment Article Attempts]
+        RetryArt[Retry Generate Article with Error Feedback]
     end
 
-    %% Subgraph Fase 5: Publikasi & Selesai
-    subgraph Fase_5[Fase 5: Publikasi & Selesai]
-        Slug[Buat URL Slug & Tag Akhir]
-        Post[/POST Blog sebagai Draft ke API/]
-        End([Selesai: Log Success])
+    %% Subgraph Phase 5: Publication & Completion
+    subgraph Phase_5[Phase 5: Publication & Completion]
+        Slug[Generate final URL Slug & Tags]
+        Post[/POST Blog Draft to API/]
+        End([End: Log Success])
     end
 
-    %% Alur Hubungan Antar Node
+    %% Node Connections
     Manual --> Niche
     Cron --> Niche
     Niche --> Embed
@@ -74,123 +76,123 @@ flowchart TD
     GenTitle --> ParseTitle
     ParseTitle --> ValTitle
     
-    %% Loop Validasi Judul
-    ValTitle -- Tidak --> IncTitle
+    %% Title Validation Loop
+    ValTitle -- No --> IncTitle
     IncTitle --> RetryTitle
     RetryTitle --> ParseTitle
     
-    %% Alur Pasca Validasi Judul
-    ValTitle -- Ya --> GetBlogs
+    %% Post-Title Validation Flow
+    ValTitle -- Yes --> GetBlogs
     GetBlogs --> CheckDup
     CheckDup --> IsDup
     
-    %% Percabangan Duplikasi
-    IsDup -- Ya --> StopDup
-    IsDup -- Tidak --> GenArt
+    %% Duplicate Branching
+    IsDup -- Yes --> StopDup
+    IsDup -- No --> GenArt
     
-    %% Alur Generasi Artikel
+    %% Article Generation Flow
     GenArt --> ParseArt
     ParseArt --> ValArt
     
-    %% Loop Validasi Artikel
-    ValArt -- Tidak --> IncArt
+    %% Article Validation Loop
+    ValArt -- No --> IncArt
     IncArt --> RetryArt
     RetryArt --> ParseArt
     
-    %% Alur Akhir
-    ValArt -- Ya --> Slug
+    %% Final Flow
+    ValArt -- Yes --> Slug
     Slug --> Post
     Post --> End
 ```
 
 ---
 
-## Fitur-Fitur Unggulan
+## Key Features
 
-*   **Pencarian Berbasis RAG**: Mengambil konteks faktual dari Qdrant menggunakan model `gemini-embedding-001` untuk memastikan tulisan mengacu pada modul dan studi kasus riil.
-*   **Gerbang Validasi Judul**: Judul dijamin memiliki tingkat keterbacaan SEO yang baik (minimal 10 karakter) dengan sistem *retry* hingga 3 kali.
-*   **Anti-Duplikasi Konten**: Secara cerdas melakukan *fetch* artikel yang sudah ada di portal tujuan (`domain-anda.com/api/blogs`) untuk mencegah pembuatan artikel dengan judul yang sama.
-*   **Kualitas & Kepatuhan Format HTML**: Melakukan pengecekan ketat terhadap panjang artikel (minimal 300 karakter untuk draft aman) dan kepatuhan tag HTML (hanya mengizinkan tag semantik seperti `<h2>`, `<h3>`, `<p>`, `<ul>`, `<li>`, `<strong>`, dan `<em>` tanpa *markdown* mentah).
-*   **Self-Healing AI Loop**: Jika hasil generasi artikel pertama gagal melewati validasi, n8n akan mengirimkan kembali artikel gagal beserta log kegagalannya ke Gemini untuk dilakukan perbaikan terarah (*auto-recovery loop*).
-*   **Generasi Slug & Tag Otomatis**: Secara otomatis memformat slug yang aman untuk URL dan menghasilkan 5-8 tag SEO yang relevan.
-*   **Integrasi REST API**: Mengunggah artikel secara otomatis sebagai status *Draft* untuk ditinjau oleh editor manusia sebelum dipublikasikan.
+*   **RAG-Powered Search**: Fact-checks and fetches real corporate module data from Qdrant using the `gemini-embedding-001` model to ensure articles are accurate and authentic.
+*   **Title Validation Gateway**: Ensures generated titles adhere to SEO readability standards (min 10 characters) with a robust retry threshold of up to 3 times.
+*   **Duplicate Content Prevention**: Intelligently fetches existing posts from your portal API (`domain-anda.com/api/blogs`) and halts execution if the title already exists.
+*   **Strict HTML Compliance**: Validates article length (min 300 characters for safe draft size) and filters raw Markdown, allowing only clean semantic HTML tags (`<h2>`, `<h3>`, `<p>`, `<ul>`, `<li>`, `<strong>`, and `<em>`).
+*   **Self-Healing AI Loop**: If the initial article fails validation, n8n automatically feeds the validation logs and raw payload back into Gemini for structured correction.
+*   **Automated Slug & Tag Generator**: Formats web-safe URL slugs and extracts 5–8 highly relevant SEO tags automatically.
+*   **REST API Integration**: Seamlessly publishes completed posts directly into your CMS or portal database as a review-ready `Draft`.
 
 ---
 
-## Cara Memulai & Instalasi
+## Getting Started & Installation
 
-### 1. Prasyarat Lingkungan
-Pastikan Anda memiliki file kredensial dan API Key berikut:
-*   **Google Gemini API Key** (untuk integrasi AI)
-*   **API Credentials** (Header authentication untuk posting blog)
+### 1. Environmental Prerequisites
+Ensure you have configured the following credentials and API keys:
+*   **Google Gemini API Key** (for AI-powered workflows)
+*   **API Credentials** (Header authentication for your target blog REST API)
 
-### 2. Menjalankan Infrastruktur (Docker)
-Workspace ini telah dilengkapi dengan berkas `docker-compose.yml` untuk menjalankan instansi lokal n8n dan Qdrant secara instan.
+### 2. Spanning the Infrastructure (Docker)
+This workspace is equipped with a `docker-compose.yml` to launch local n8n and Qdrant containers instantly.
 
-Jalankan perintah berikut pada terminal di direktori workspace ini:
+Execute the following terminal command in this workspace directory:
 ```bash
 docker compose up -d
 ```
 
-Layanan yang akan berjalan:
-*   **n8n**: Tersedia pada port `5678` (Data disimpan secara lokal di `./n8n_data`).
-*   **Qdrant**: Tersedia pada port `6333` (Dashboard visual) & `6334` (GRPC) (Data disimpan secara persisten).
+Services exposed:
+*   **n8n**: Available on port `5678` (Persistent session/credentials stored locally in `./n8n_data`).
+*   **Qdrant**: Available on port `6333` (Web Dashboard) & `6334` (gRPC port).
 
-### 3. Mengimpor Alur Kerja ke n8n
-1.  Buka browser Anda dan masuk ke dashboard n8n: `http://localhost:5678`
-2.  Buat alur kerja baru (*Create new workflow*).
-3.  Klik ikon menu tiga titik di pojok kanan atas, lalu pilih **Import from file...**.
-4.  Pilih berkas [core.json](core.json) dari komputer Anda.
-5.  Konfigurasikan Kredensial berikut pada n8n Anda:
-    *   **googlePalmApi**: Masukkan Google Gemini API Key Anda.
-    *   **httpHeaderAuth (Account 1)**: Konfigurasi otorisasi header untuk API.
-    *   **httpHeaderAuth (Account 2)**: Konfigurasi header tambahan jika diperlukan.
-
----
-
-## Konfigurasi Alur Kerja (Workflow Customization)
-
-Anda dapat dengan mudah menyesuaikan target penulisan artikel dengan memodifikasi parameter pada node **Set Niche**:
-
-*   `industry`: Industri target pembaca (contoh: `UMKM`, `Retail`, `Manufaktur`).
-*   `problem`: Masalah operasional yang dihadapi industri tersebut (contoh: `pencatatan manual`, `stok bocor`).
-*   `solution`: Solusi spesifik yang ditawarkan oleh produk ERP Anda (contoh: `ERP sederhana`, `Manajemen Inventaris Otomatis`).
-*   `userId`: ID pengguna pembuat artikel pada platform blog.
+### 3. Importing Workflow into n8n
+1.  Open your browser and login to your n8n dashboard: `http://localhost:5678`
+2.  Create a new empty workflow.
+3.  Click the top-right three-dot menu and select **Import from file...**.
+4.  Choose the [core.json](core.json) file from this repository directory.
+5.  Configure the following credentials in your n8n credentials vault:
+    *   **googlePalmApi**: Paste your Google Gemini API Key.
+    *   **httpHeaderAuth (Account 1)**: Header authorization configuration for your blog API.
+    *   **httpHeaderAuth (Account 2)**: Additional custom headers if required.
 
 ---
 
-## Penyesuaian Formulir & Skema API (API & Form Customization)
+## Workflow Customization
 
-Karena setiap platform blog, CMS (seperti WordPress, Ghost, Strapi), atau pemicu formulir input memiliki struktur database dan skema data yang berbeda, Anda perlu melakukan beberapa penyesuaian pada node-node berikut agar alur kerja dapat terintegrasi dengan mulus pada sistem Anda.
+You can effortlessly customize writing goals, topics, and styles by modifying variables on the **Set Niche** node:
 
-### 1. Menyesuaikan Input Pemicu (Form Input)
-Alur kerja bawaan menggunakan node **Set Niche** (berisi nilai statis) untuk kebutuhan pengujian. Jika Anda ingin menghubungkannya dengan formulir dinamis:
-*   **n8n Form Trigger / Webhook**: Hapus node `Set Niche` dan ganti dengan node **n8n Form Trigger** atau **Webhook** di awal alur kerja.
-*   **Pemetaan Variabel**: Pastikan field masukan dari formulir Anda dipetakan ulang di node **Get Embedding (RAG)** menggunakan ekspresi n8n yang dinamis.
-    *   Contoh pemetaan jika input berasal dari formulir n8n:
+*   `industry`: Target customer industry (e.g., `SME`, `Retail`, `Manufacturing`).
+*   `problem`: Core operational struggles of that industry (e.g., `manual bookkeeping`, `inventory leakage`).
+*   `solution`: Specific ERP module value offerings solving the problem (e.g., `Simple ERP`, `Automated Inventory Tracking`).
+*   `userId`: The author user ID assigned to the published draft.
+
+---
+
+## API & Form Customization
+
+Since every blogging platform, headless CMS (like WordPress, Ghost, Strapi), or custom forms possess different database schema representations, follow these guides to integrate n8n smoothly into your setup:
+
+### 1. Adjusting Input Triggers (Forms & Dynamic Triggers)
+By default, the workflow uses a static **Set Niche** node for sandbox testing. To hook it up with live form inputs:
+*   **n8n Form / Webhooks**: Replace `Set Niche` with an **n8n Form Trigger** or **Webhook** node at the workflow root.
+*   **Field Mapping**: Map dynamic incoming fields inside the **Get Embedding (RAG)** node using dynamic n8n expressions.
+    *   Example mapping if trigger is an n8n Form:
         *   `{{ $json.body.industry }}`
         *   `{{ $json.body.problem }}`
         *   `{{ $json.body.solution }}`
 
-### 2. Menyesuaikan Pemeriksaan Duplikat (GET Blogs)
-Node **GET Blogs** memanggil API untuk mengambil daftar artikel guna mencegah pembuatan artikel dengan judul yang sama.
-*   **Ubah Endpoint**: Sesuaikan URL pada node `GET Blogs` ke endpoint API daftar artikel blog Anda.
-*   **Penyesuaian Struktur Kode (Check Duplicate)**: Jika API Anda mengembalikan struktur data yang berbeda (misalnya bukan berformat array di dalam objek `.data`), sesuaikan kode JavaScript di dalam node **Check Duplicate**:
+### 2. Customizing Duplicate Check (GET Blogs)
+The **GET Blogs** HTTP Request node queries your active server to list already published posts.
+*   **Adjust Endpoint**: Update the Request URL to point to your actual CMS list endpoint.
+*   **Modify Javascript Logic (Check Duplicate)**: If your backend JSON output is not wrapped under the standard `.data` array, adapt the Javascript code inside the **Check Duplicate** node:
     ```javascript
-    // Contoh default jika API mengembalikan { data: [ { title: "..." } ] }
+    // Default format expects { data: [ { title: "..." } ] }
     const blogs = $json.data || []; 
     
-    // GANTI baris di atas jika API Anda mengembalikan array langsung secara mentah:
+    // REPLACE above line if your API returns a raw JSON array:
     // const blogs = $json || [];
     
-    // ATAU jika properti judul di CMS Anda bernama 'post_title' (contoh: WordPress):
+    // OR if WordPress is used (where post title resides under 'post_title'):
     // const exists = blogs.some(b => b.post_title === title);
     ```
 
-### 3. Menyesuaikan Payload Publikasi (POST Blog)
-Node **POST Blog** mengirimkan payload artikel final. Sesuaikan payload parameter body di dalam node HTTP Request ini dengan skema API CMS tujuan Anda:
-*   **WordPress REST API (Contoh)**:
-    Jika menggunakan WordPress, payload body dikirimkan via JSON dengan parameter standar:
+### 3. Customizing Publish Payload (POST Blog)
+The **POST Blog** HTTP Request node handles the final draft publishing payload. Adjust the parameters inside this node's body according to your CMS API schema:
+*   **WordPress REST API Example**:
+    Send JSON payload mapping standard fields:
     ```json
     {
       "title": "{{ $json.title }}",
@@ -199,17 +201,17 @@ Node **POST Blog** mengirimkan payload artikel final. Sesuaikan payload paramete
       "slug": "{{ $json.slug }}"
     }
     ```
-*   **Ghost CMS API (Contoh)**:
-    Ghost menggunakan format editor khusus (Mobiledoc/Lexical) dan dibungkus di dalam array `posts`. Sesuaikan parameter pengiriman agar sesuai dengan dokumentasi API Ghost.
-*   **Custom API / Headless CMS**:
-    Sesuaikan daftar parameter pada node **POST Blog** (seperti `title`, `content`, `slug`, `tags`, `userId`) agar sesuai persis dengan nama field di database atau skema API backend Anda.
+*   **Ghost CMS API Example**:
+    Ghost wraps the request in a nested `posts` array and supports Lexical/Mobiledoc editor JSON structures. Adjust standard payloads matching Ghost developers' guidelines.
+*   **Custom / Headless CMS API**:
+    Edit the JSON keys inside the body field (e.g. mapping `title`, `content`, `slug`, `tags`, `userId`) to match your custom backend property definitions.
 
 ---
 
-## Keamanan & Kepatuhan Data
+## Security & Data Compliance
 
-*   **Penyimpanan Data**: Folder `n8n_data` diabaikan oleh Git melalui `.gitignore` untuk mencegah bocornya data sesi n8n, kredensial lokal, dan alur kerja aktif yang sedang berjalan.
-*   **API Key**: Semua token autentikasi dikelola langsung di dalam kredensial internal n8n yang terenkripsi dan **tidak** ditulis secara mentah di dalam file `core.json` atau file konfigurasi docker.
+*   **Local Persistence**: The `n8n_data` folder is fully ignored by Git via `.gitignore` to prevent leaking local encryption keys, active sessions, and dynamic database credentials.
+*   **API Security**: All API keys, passwords, and authorization tokens must reside in n8n's encrypted local credentials vault, **never** hardcoded into `core.json` or Docker environment files.
 
 ---
-Dikembangkan untuk otomatisasi yang andal dan cerdas oleh mikeu-dev.
+Developed for reliable and intelligent automation by mikeu-dev.

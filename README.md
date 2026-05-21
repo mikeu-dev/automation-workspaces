@@ -1,76 +1,79 @@
 # n8n Automation Workspaces
 
-Selamat datang di repositori pusat pengelolaan alur kerja otomatisasi (**automation workflows**) berbasis **n8n**. Repositori ini dirancang dengan struktur multi-workspace untuk mempermudah manajemen, pelacakan versi, dan kolaborasi dalam pengembangan sistem otomatisasi bisnis.
+[Bahasa Indonesia](./README.id.md) 🇮🇩
+
+Welcome to the central repository for managing **n8n-based automation workflows**. This repository is designed with a multi-workspace structure to simplify management, version tracking, and collaboration for business automation workflows development.
 
 ---
 
-## Struktur Repositori
+## Repository Structure
 
-Repositori ini menggunakan struktur monorepo sederhana berbasis workspace untuk mengisolasi setiap proyek otomatisasi beserta dependensinya (seperti konfigurasi Docker Compose, volume data, dan berkas ekspor alur kerja).
+This repository uses a simple monorepo structure with workspace isolation to separate each automation project alongside its specific dependencies (such as Docker Compose configurations, persistent data volumes, and workflow export files).
 
 ```bash
 .
 ├── .gitignore
-├── README.md               # Dokumentasi utama repositori
-└── workspaces/             # Direktori proyek otomatisasi
-    └── blog-content-engine/   # Engine pembuatan konten blog otomatis B2B
+├── README.md               # Main repository documentation (English)
+├── README.id.md            # Repository documentation (Bahasa Indonesia)
+└── workspaces/             # Automation projects directory
+    └── blog-content-engine/   # B2B automated blog content engine workspace
 ```
 
 ---
 
-## Daftar Workspaces
+## Workspaces List
 
-Saat ini, repositori ini mengelola workspace aktif berikut:
+Currently, this repository manages the following active workspace:
 
-| Workspace | Versi | Komponen Utama | Deskripsi Singkat |
+| Workspace | Version | Core Components | Short Description |
 | :--- | :---: | :--- | :--- |
-| [**Blog Content Engine**](workspaces/blog-content-engine/README.md) | `v3.3.1` | n8n, Qdrant, Google Gemini | Pembangkit artikel blog B2B berbasis SEO yang didukung oleh teknologi RAG (Retrieval-Augmented Generation) untuk menjamin akurasi konten berdasarkan basis pengetahuan riil. |
+| [**Blog Content Engine**](workspaces/blog-content-engine/README.md) | `v3.3.1` | n8n, Qdrant, Google Gemini | An SEO-friendly B2B blog article generator powered by RAG (Retrieval-Augmented Generation) to guarantee content factual accuracy based on modules and real-world case studies knowledge base. |
 
 ---
 
-## Prasyarat Umum
+## General Prerequisites
 
-Untuk menjalankan alur kerja di dalam repositori ini, pastikan sistem Anda telah terpasang:
-*   [Docker](https://docs.docker.com/get-docker/) (Versi 20.10+)
-*   [Docker Compose](https://docs.docker.com/compose/install/) (Versi 2.0+)
-*   Koneksi internet aktif untuk penarikan citra (*image*) Docker dan akses API eksternal (seperti Google Gemini API).
+To run any workflow inside this repository, ensure your system has the following installed:
+*   [Docker](https://docs.docker.com/get-docker/) (Version 20.10+)
+*   [Docker Compose](https://docs.docker.com/compose/install/) (Version 2.0+)
+*   An active internet connection to pull Docker images and access external APIs (such as Google Gemini API).
 
 ---
 
-## Cara Memulai
+## Getting Started
 
-Untuk mulai menggunakan salah satu workspace:
+To start using a workspace:
 
-1.  **Kloning Repositori**:
+1.  **Clone the Repository**:
     ```bash
-    git clone <url-repositori-ini> n8n-automation
+    git clone <repository-url> n8n-automation
     cd n8n-automation
     ```
 
-2.  **Pilih & Jalankan Proyek**:
-    Masuk ke direktori workspace pilihan Anda, lalu jalankan layanannya. Sebagai contoh untuk `blog-content-engine`:
+2.  **Select & Run the Project**:
+    Navigate to your preferred workspace directory and spin up the services. For example, for the `blog-content-engine`:
     ```bash
     cd workspaces/blog-content-engine
     docker compose up -d
     ```
 
-3.  **Akses n8n**:
-    Buka peramban (*browser*) Anda dan akses dashboard n8n di: `http://localhost:5678`
+3.  **Access n8n**:
+    Open your browser and navigate to the n8n dashboard: `http://localhost:5678`
 
-4.  **Impor Alur Kerja**:
-    Ekspor alur kerja berupa file JSON (seperti `core.json`) dapat diimpor langsung ke dashboard n8n Anda.
-
----
-
-## Kebijakan Kontribusi & Git
-
-*   **Pola Commit**: Repositori ini menerapkan standar [Conventional Commits](https://www.conventionalcommits.org/). Setiap pesan commit wajib ditulis dalam **bahasa Inggris** dengan format teratur:
-    *   `feat: <deskripsi>` untuk fitur baru.
-    *   `fix: <deskripsi>` untuk perbaikan bug.
-    *   `docs: <deskripsi>` untuk pembaruan dokumentasi.
-*   **Penandaan Versi (Tagging)**: Karena repositori ini menggunakan arsitektur monorepo dengan berbagai *workspace*, penandaan versi wajib menggunakan **Scoped Tagging** agar versi setiap *workspace* dapat dikelola secara independen:
-    *   Format: `<nama-workspace>@v<versi>` (Contoh: `blog-content-engine@v3.3.1`)
-*   **Keamanan Kredensial**: **Dilarang keras** men-commit file `.env` berisi kunci API sensitif atau kredensial produksi. Gunakan template `.env.example` jika diperlukan.
+4.  **Import the Workflow**:
+    Import the workflow JSON file (such as `core.json`) directly into your n8n dashboard interface.
 
 ---
-Dokumentasi ini dikelola oleh mikeu-dev.
+
+## Contribution & Git Policies
+
+*   **Commit Pattern**: This repository strictly enforces the [Conventional Commits](https://www.conventionalcommits.org/) standard. All commit messages must be written in **English** using the following formats:
+    *   `feat: <description>` for a new feature.
+    *   `fix: <description>` for a bug fix.
+    *   `docs: <description>` for documentation updates.
+*   **Version Tagging**: Since this is a monorepo with multiple independent workspaces, version tagging must use **Scoped Tagging** to prevent version conflict:
+    *   Format: `<workspace-name>@v<version>` (Example: `blog-content-engine@v3.3.1`)
+*   **Credentials Safety**: **Strictly prohibited** to commit `.env` files containing sensitive API keys or production credentials. Use `.env.example` templates if required.
+
+---
+Documentation managed by mikeu-dev.
