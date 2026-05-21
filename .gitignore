@@ -1,0 +1,22 @@
+# n8n data directory
+n8n_data/
+**/n8n_data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environments / Secrets
+.env
+.env.*
+!.env.example
+
+# Node / package manager (jika nanti ada)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs/
+*.log

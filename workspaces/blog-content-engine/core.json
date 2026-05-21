@@ -1,0 +1,859 @@
+{
+  "name": "Blog Content Engine v3.3.1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4e6d9826-26d9-4569-aa22-6037a7240051",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1568,
+        6240
+      ]
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
+      },
+      "id": "b71057f5-8dca-431d-a5d0-484346f64123",
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -1568,
+        6432
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "industry",
+              "value": "UMKM"
+            },
+            {
+              "name": "problem",
+              "value": "pencatatan manual"
+            },
+            {
+              "name": "solution",
+              "value": "ERP sederhana"
+            },
+            {
+              "name": "userId",
+              "value": "YOUR_USER_ID_HERE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9f982cdf-c807-42d4-b057-880ace6d47cf",
+      "name": "Set Niche",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        6288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $json.problem }} {{ $json.solution }} di industri {{ $json.industry }}\"\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "938bfcaf-e5e3-4077-8632-d57b54cf629d",
+      "name": "Get Embedding (RAG)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1120,
+        6288
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "honIFwUsTC1Mvcn7",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/erp_knowledge_base/points/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vector\": {{ JSON.stringify($json.embedding.values) }},\n  \"limit\": 3,\n  \"with_payload\": true\n}",
+        "options": {}
+      },
+      "id": "50fe70b8-48d7-461e-932d-a9131a8487e3",
+      "name": "Search Qdrant (RAG)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -896,
+        6288
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `[Sumber: ${hit.payload.source}]\\n${hit.payload.text}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"Tidak ada dokumen referensi yang ditemukan.\" } };"
+      },
+      "id": "af782ef4-7efe-420e-bfa9-8f1d47f50eed",
+      "name": "Format Context (RAG)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        6288
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.yourdomain.com/api/blogs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "options": {}
+      },
+      "id": "857d5bfd-4905-4a20-8801-c7f9a51a49ee",
+      "name": "GET Blogs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        352,
+        6432
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mnpwemGR9lR6gB5Z",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const title = $(\"Parse Title & Outline\").first().json.title;\n\nconst blogs = $json.data || [];\n\nconst exists = blogs.some(b => b.title === title);\n\nreturn { json: { exists, title } };"
+      },
+      "id": "5fdde890-1fff-4532-acc6-8af8dd76c2eb",
+      "name": "Check Duplicate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        6480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "duplicate-check-cond",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        928,
+        6480
+      ],
+      "id": "2e8ff5e5-729b-4d29-b4d2-2785f0a9fd0e",
+      "name": "Is Duplicate?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        6416
+      ],
+      "id": "754ab393-b1e9-4c47-b2cb-17e843ba0f2e",
+      "name": "Stop: Duplicate Article"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const base = ($json.slug || $json.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')).replace(/^-|-$/g,'');\nconst id = Math.random().toString(36).substring(2,6);\nreturn {json:{...$json, slug: base + '-' + id}};"
+      },
+      "id": "ddbb4861-8245-4bc9-b67e-34dff18b1c66",
+      "name": "Slug",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        6624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.yourdomain.com/api/blogs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{$json.title}}"
+            },
+            {
+              "name": "slug",
+              "value": "={{$json.slug}}"
+            },
+            {
+              "name": "content",
+              "value": "={{$json.content}}"
+            },
+            {
+              "name": "published",
+              "value": "={{ false }}"
+            },
+            {
+              "name": "userId",
+              "value": "={{ $('Set Niche').first().json.userId }}"
+            },
+            {
+              "name": "thumbnail",
+              "value": "={{null}}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $json.tags }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14619a9d-1153-47ec-bd99-c9bdf186e453",
+      "name": "POST Blog",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        2240,
+        6768
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 10000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mnpwemGR9lR6gB5Z",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "SUCCESS"
+            },
+            {
+              "name": "title",
+              "value": "{{$json.title}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c09d5d3d-ce4c-4a22-bf14-82ca98cc5a23",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        6768
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Buat judul dan outline artikel blog B2B berdasarkan dokumen pengetahuan riil:\n\nIndustry: {{ $('Set Niche').first().json.industry }}\nProblem: {{ $('Set Niche').first().json.problem }}\nSolution: {{ $('Set Niche').first().json.solution }}\n\nDokumen Referensi ERP (RAG):\n{{ $('Format Context (RAG)').first().json.context }}\n\nTarget: pemilik bisnis / manajer\n\nKetentuan judul: SEO friendly, 10-20 kata, profesional, tidak clickbait.\n\nKetentuan outline: 5-7 section utama (JSON array). Mencakup: definisi, tantangan, solusi ERP, studi kasus, kesimpulan. Sub-section sebagai object. Wajib mencantumkan modul atau poin dari Dokumen Referensi.\n\nContoh format: [\"Apa Itu ERP\",{\"Tantangan\":[\"Inventory\",\"Human Error\"]},\"Kesimpulan\"]\n\nOutput JSON SAJA:\n{\n  \"title\": \"\",\n  \"outline\": []\n}"
+            },
+            {}
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        6288
+      ],
+      "id": "2cf6a0b8-4e32-4a46-a66c-78ea5aade8fe",
+      "name": "Generate Title & Outline",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=AI writer profesional B2B. Buat artikel blog SEO berkualitas tinggi dengan memanfaatkan fakta dan data dari Dokumen Referensi.\n\nDATA:\nJudul: {{ $('Parse Title & Outline').first().json.title }}\nIndustry: {{ $('Set Niche').first().json.industry }}\nProblem: {{ $('Set Niche').first().json.problem }}\nSolution: {{ $('Set Niche').first().json.solution }}\nOutline: {{ JSON.stringify($('Parse Title & Outline').first().json.outline) }}\n\nDokumen Referensi ERP (RAG):\n{{ $('Format Context (RAG)').first().json.context }}\n\nKETENTUAN:\n- 1200-1800 kata, Bahasa Indonesia profesional\n- Tulis artikel dengan merujuk pada fakta yang ada di Dokumen Referensi ERP (RAG). Jangan mengada-ada atau menulis modul/fitur yang tidak tercantum dalam referensi.\n- Ikuti outline runtut: item utama → <h2>, sub-item → <h3>\n- Keyword utama di 20% awal dan minimal 1 heading\n- Wajib 1 studi kasus bisnis realistis (bukan nama generik seperti PT XYZ) yang relevan dengan penerapan solusi. Anda HARUS mencari dan mengadopsi studi kasus riil yang terdapat di dalam Dokumen Referensi ERP (RAG). Jika Dokumen Referensi tidak berisi studi kasus spesifik, Anda harus menyusun sebuah studi kasus simulasi yang sangat logis dan realistis berdasarkan industri, kondisi sebelum/sesudah penerapan solusi, serta dampak bisnis terukur, tanpa melakukan fabrikasi nama perusahaan fiktif jika tidak didukung data referensi.\n- Format studi kasus: \"perusahaan [industri] di [lokasi]\" dengan kondisi sebelum/sesudah penerapan solusi dan dampak bisnis terukur\n\nTYPOGRAPHY:\n- Maks 2-4 kalimat/paragraf, scan-friendly\n- Bullet list untuk manfaat/tantangan/strategi/tahapan\n- Tone profesional bisnis natural, hindari robotic/akademik\n\nHTML ONLY: <h2> <h3> <p> <ul> <li> <strong> <em>\nDILARANG: markdown, <div>, <span>, <table>, <br>, <img>, <a>, URL\n\nTags: 5-8 item lowercase SEO relevan dengan niche dan solusi.\nSlug: dari judul final, lowercase, dash only.\n\nSelf-check: JSON valid, semua field ada, HTML valid, ≥1200 kata, outline diikuti, ada studi kasus.\n\nOUTPUT JSON SAJA:\n{\"title\":\"\",\"slug\":\"\",\"content\":\"\",\"tags\":[]}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        6608
+      ],
+      "id": "594e4781-d22a-4b9e-b700-9b43ff8645db",
+      "name": "Generate Artikel",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output || $json.text || $json.content?.parts?.[0]?.text || '{}';\nlet parsed;\ntry {\n  const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleanedText);\n} catch (e) {\n  parsed = { title: '', content: '', slug: '', tags: [] };\n}\n\nlet attempts = 0;\ntry {\n  attempts = $('Increment Artikel Attempts').item.json.attempts || $('Increment Artikel Attempts').last().json.attempts || 0;\n} catch (e) {\n  attempts = 0;\n}\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed,\n    attempts: attempts\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        6608
+      ],
+      "id": "2d5615ff-c2b7-4add-9e42-80fcbb9f3ac9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Buat ulang judul dan outline artikel yang lebih baik berdasarkan dokumen pengetahuan riil:\n\nIndustry: {{ $('Set Niche').first().json.industry }}\nProblem: {{ $('Set Niche').first().json.problem }}\nSolution: {{ $('Set Niche').first().json.solution }}\n\nDokumen Referensi ERP (RAG):\n{{ $('Format Context (RAG)').first().json.context }}\n\nJudul: SEO friendly, 10-20 kata, spesifik problem bisnis, tidak clickbait.\nOutline: 5-7 section, format JSON array dengan sub-section sebagai object. Wajib mengadopsi poin-poin dari Dokumen Referensi.\n\nOutput JSON SAJA:\n{\n  \"title\": \"\",\n  \"outline\": []\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        6288
+      ],
+      "id": "f95b819c-bf68-4b8b-b43e-0d3d55ec3bd5",
+      "name": "Retry Generate Title & Outline",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Perbaiki artikel yang gagal validasi dengan tetap merujuk pada Dokumen Referensi.\n\nDATA:\nJudul: {{ $('Parse Title & Outline').first().json.title }}\nIndustry: {{ $('Set Niche').first().json.industry }}\nProblem: {{ $('Set Niche').first().json.problem }}\nSolution: {{ $('Set Niche').first().json.solution }}\nOutline: {{ JSON.stringify($('Parse Title & Outline').first().json.outline) }}\n\nDokumen Referensi ERP (RAG):\n{{ $('Format Context (RAG)').first().json.context }}\n\nHASIL SEBELUMNYA:\n{{ $json.previous_output }}\n\nERROR:\n{{ $json.validation_error }}\n\nRECOVERY:\n- JSON rusak → generate ulang total\n- Terlalu pendek → perluas ke 1200-1800 kata\n- HTML invalid → gunakan HANYA: <h2> <h3> <p> <ul> <li> <strong> <em>\n- Tanpa studi kasus → tambahkan studi kasus bisnis realistis secara konsisten dengan mencarinya dari Dokumen Referensi ERP (RAG). Jika tidak ada di referensi, buat studi kasus simulasi yang realistis sesuai format.\n- Pertahankan bagian berkualitas, perbaiki yang gagal\n\nArtikel harus: SEO friendly, Bahasa Indonesia profesional, ikuti outline, tone bisnis natural.\nSlug: dari judul final, lowercase, dash. Tags: 5-8 item lowercase.\n\nOUTPUT JSON SAJA:\n{\"title\":\"\",\"slug\":\"\",\"content\":\"\",\"tags\":[]}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        6576
+      ],
+      "id": "1b30acf3-7eca-46a0-9f4d-a12692e4cbd8",
+      "name": "Retry Generate Artikel",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "article-validity-check",
+              "leftValue": "={{ (($json.title || '').length >= 10 && ($json.content || '').length >= 300 && ($json.slug || '').length >= 10) || ($json.attempts || 0) >= 3 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1728,
+        6528
+      ],
+      "id": "8e1bb0c1-325f-4ad2-a06c-79a4da2f64ba",
+      "name": "Artikel Valid?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "title-length-cond",
+              "leftValue": "={{ ($json.title || '').length }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gte",
+                "name": "filter.operator.gte"
+              }
+            },
+            {
+              "id": "title-attempts-cond",
+              "leftValue": "={{ $json.attempts || 0 }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gte",
+                "name": "filter.operator.gte"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        128,
+        6240
+      ],
+      "id": "d37ab661-f10e-4e69-9a6f-3b885445c803",
+      "name": "Title Valid?"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "attempts",
+              "value": "={{ ($json.attempts || 0) + 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d54d2b12-7678-43e6-bbfd-bad65924cb79",
+      "name": "Increment Title Attempts",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        352,
+        6240
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "attempts",
+              "value": "={{ ($json.attempts || 0) + 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9650f19a-debf-48fa-82a1-2ecc18ee57a8",
+      "name": "Increment Artikel Attempts",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        6432
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawText = $json.output || $json.text || $json.content?.parts?.[0]?.text || '{}';\nlet parsed;\ntry {\n  const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleanedText);\n} catch (e) {\n  parsed = { title: '', outline: [] };\n}\n\nlet attempts = 0;\ntry {\n  attempts = $('Increment Title Attempts').item.json.attempts || $('Increment Title Attempts').last().json.attempts || 0;\n} catch (e) {\n  attempts = 0;\n}\n\nreturn {\n  json: {\n    ...$json,\n    ...parsed,\n    attempts: attempts\n  }\n};"
+      },
+      "id": "3c2cf19b-bb50-4072-85ef-25796fd22fa3",
+      "name": "Parse Title & Outline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        6288
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Niche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Set Niche",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Niche": {
+      "main": [
+        [
+          {
+            "node": "Get Embedding (RAG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Embedding (RAG)": {
+      "main": [
+        [
+          {
+            "node": "Search Qdrant (RAG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Qdrant (RAG)": {
+      "main": [
+        [
+          {
+            "node": "Format Context (RAG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Context (RAG)": {
+      "main": [
+        [
+          {
+            "node": "Generate Title & Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Blogs": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slug": {
+      "main": [
+        [
+          {
+            "node": "POST Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Blog": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Is Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "Stop: Duplicate Article",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Artikel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Title & Outline": {
+      "main": [
+        [
+          {
+            "node": "Parse Title & Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Artikel": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Artikel Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Generate Title & Outline": {
+      "main": [
+        [
+          {
+            "node": "Parse Title & Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Generate Artikel": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Artikel Valid?": {
+      "main": [
+        [
+          {
+            "node": "Slug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Increment Artikel Attempts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Title Valid?": {
+      "main": [
+        [
+          {
+            "node": "GET Blogs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Increment Title Attempts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Title Attempts": {
+      "main": [
+        [
+          {
+            "node": "Retry Generate Title & Outline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Artikel Attempts": {
+      "main": [
+        [
+          {
+            "node": "Retry Generate Artikel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Title & Outline": {
+      "main": [
+        [
+          {
+            "node": "Title Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a6fe586d-7983-4b70-a04d-16570a1797c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID_HERE"
+  },
+  "id": "2SY4NOYdNQSR3UBU",
+  "tags": []
+}
