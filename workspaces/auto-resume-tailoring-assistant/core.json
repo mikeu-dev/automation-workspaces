@@ -146,7 +146,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"Title: {{ $json.title }}\\nType: {{ $json.type }}\\nKeywords: {{ ($json.keywords || []).join(', ') }}\\nStack: {{ ($json.stack || []).join(', ') }}\\nBullets: {{ ($json.base_bullets || []).join('; ') }}\"\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": {{ JSON.stringify(\"Title: \" + $json.title + \"\\nType: \" + $json.type + \"\\nKeywords: \" + ($json.keywords || []).join(', ') + \"\\nStack: \" + ($json.stack || []).join(', ') + \"\\nBullets: \" + ($json.base_bullets || []).join('; ')) }}\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "e0b917bb-82ae-4e03-86b8-6474a7d201d6",
@@ -203,7 +203,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Save JD to Context').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": {{ JSON.stringify($('Save JD to Context').first().json.job_description) }}\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "a2885e09-0548-4590-9213-93031ff5455b",
