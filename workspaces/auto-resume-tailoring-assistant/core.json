@@ -112,7 +112,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/master_profile.json",
+        "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/master_profile.json",
         "options": {}
       },
       "id": "f55f1269-31f5-4b19-93ac-1dc87d30c090",
@@ -289,7 +289,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx",
+        "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx",
         "options": {}
       },
       "id": "8c820ec3-82e0-481f-9680-c1688ce1ced4",
