@@ -97,7 +97,7 @@
         "url": "http://qdrant:6333/collections/resume_projects",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "{\n  \"vectors\": {\n    \"size\": 768,\n    \"distance\": \"Cosine\"\n  }\n}",
+        "jsonBody": "{\n  \"vectors\": {\n    \"size\": 3072,\n    \"distance\": \"Cosine\"\n  }\n}",
         "options": {}
       },
       "id": "fa89a44f-325b-4672-b832-72189b306e67",
