@@ -80,7 +80,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const jd = $('Extract Telegram JD').first()?.json?.job_description || $('Setup Job Deskripsi').first()?.json?.job_description || '';\nreturn { json: { job_description: jd } };"
+        "jsCode": "let jd = '';\ntry { jd = $('Extract Telegram JD').first()?.json?.job_description; } catch(e) {}\nif (!jd) {\n  try { jd = $('Setup Job Deskripsi').first()?.json?.job_description; } catch(e) {}\n}\nreturn { json: { job_description: jd || '' } };"
       },
       "id": "16b146f5-4178-4867-9c9a-4c0e198fe60d",
       "name": "Save JD to Context",
@@ -408,7 +408,7 @@
       "main": [
         [
           {
-            "node": "Init Collection",
+            "node": "Save JD to Context",
             "type": "main",
             "index": 0
           }
