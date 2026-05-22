@@ -281,6 +281,7 @@
     },
     {
       "parameters": {
+        "operation": "read",
         "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx",
         "options": {}
       },
@@ -308,7 +309,7 @@
             },
             {
               "name": "data",
-              "value": "={{ $('Generate CV AI').first().json.candidates[0].content.parts[0].text.replace(/```json\\n?/g, '').replace(/```/g, '') }}"
+              "value": "={{ $('Generate CV AI').first()?.json?.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/```json\\n?/g, '')?.replace(/```/g, '') || '{}' }}"
             }
           ]
         },
