@@ -27,5 +27,12 @@ services:
     volumes:
       - qdrantdata:/qdrant/storage
 
+  docx_engine:
+    build: ./docxtpl_service
+    container_name: docx_engine
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
 volumes:
   qdrantdata:
