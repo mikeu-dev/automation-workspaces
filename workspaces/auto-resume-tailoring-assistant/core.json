@@ -12,32 +12,79 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        -200,
+        0,
         100
       ]
     },
     {
       "parameters": {},
-      "id": "trigger-form",
+      "id": "trigger-manual",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -200,
+        0,
         300
       ]
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message?.text || '';\n} \nif (!jd && $node['Manual Trigger']) {\n  // If manual trigger has mock data or if user put fields in it\n  jd = $json.job_description || $node['Manual Trigger'].json.job_description || 'Masukkan Job Description di Mock Data Manual Trigger';\n}\nreturn { json: { job_description: jd } };"
+        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message?.text || '';\n}\nif (!jd && $node['Manual Trigger']) {\n  jd = $json.job_description || $node['Manual Trigger'].json.job_description || 'Masukkan Job Description di Mock Data Manual Trigger';\n}\nreturn { json: { job_description: jd } };"
       },
-      "id": "standardize-input",
-      "name": "Extract Job Description",
+      "id": "extract-jd",
+      "name": "Extract JD",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
+        200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://qdrant:6333/collections/resume_projects",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"vectors\": {\n    \"size\": 768,\n    \"distance\": \"Cosine\"\n  }\n}",
+        "options": {}
+      },
+      "id": "init-qdrant",
+      "name": "Init Collection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        400,
+        200
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/master_profile.json"
+      },
+      "id": "read-profile",
+      "name": "Read Master Profile",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "splitOutItems",
+        "fieldToSplitOut": "projects",
+        "options": {}
+      },
+      "id": "split-projects",
+      "name": "Split Projects",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [
+        800,
         200
       ]
     },
@@ -49,7 +96,64 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $json.job_description }}\"\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"Title: {{ $json.title }}\\nType: {{ $json.type }}\\nKeywords: {{ ($json.keywords || []).join(', ') }}\\nStack: {{ ($json.stack || []).join(', ') }}\\nBullets: {{ ($json.base_bullets || []).join('; ') }}\"\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "ingest-embedding",
+      "name": "Get Embedding (Ingest)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1000,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://qdrant:6333/collections/resume_projects/points?wait=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"points\": [\n    {\n      \"id\": {{ $itemIndex + 1 }},\n      \"vector\": {{ JSON.stringify($json.embedding.values) }},\n      \"payload\": {\n        \"title\": \"{{ $json.title }}\",\n        \"stack\": {{ JSON.stringify($json.stack) }},\n        \"bullets\": {{ JSON.stringify($json.base_bullets) }}\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "ingest-qdrant",
+      "name": "Upsert to Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1200,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "limit"
+      },
+      "id": "limit-1",
+      "name": "Limit to 1",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [
+        1400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Extract JD').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "retrieve-embedding",
@@ -57,7 +161,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        200,
+        1600,
         200
       ],
       "credentials": {
@@ -81,21 +185,21 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        400,
+        1800,
         200
       ]
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Extract Job Description').first().json.job_description } };"
+        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Extract JD').first().json.job_description } };"
       },
       "id": "format-context",
       "name": "Format Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        600,
+        2000,
         200
       ]
     },
@@ -123,7 +227,7 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.2,
       "position": [
-        800,
+        2200,
         200
       ],
       "credentials": {
@@ -142,7 +246,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        1000,
+        2400,
         200
       ]
     },
@@ -172,22 +276,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1200,
-        200
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
-        "document": "={{ $json.data }}",
-        "additionalFields": {}
-      },
-      "id": "send-telegram",
-      "name": "Send CV to Telegram",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.1,
-      "position": [
-        1400,
+        2600,
         200
       ]
     }
@@ -197,14 +286,91 @@
       "main": [
         [
           {
-            "node": "Extract Job Description",
+            "node": "Extract JD",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Job Description": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract JD": {
+      "main": [
+        [
+          {
+            "node": "Init Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Collection": {
+      "main": [
+        [
+          {
+            "node": "Read Master Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Master Profile": {
+      "main": [
+        [
+          {
+            "node": "Split Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Projects": {
+      "main": [
+        [
+          {
+            "node": "Get Embedding (Ingest)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Embedding (Ingest)": {
+      "main": [
+        [
+          {
+            "node": "Upsert to Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert to Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Limit to 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to 1": {
       "main": [
         [
           {
@@ -264,28 +430,6 @@
         [
           {
             "node": "Call DOCX API",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call DOCX API": {
-      "main": [
-        [
-          {
-            "node": "Send CV to Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Manual Trigger": {
-      "main": [
-        [
-          {
-            "node": "Extract Job Description",
             "type": "main",
             "index": 0
           }
