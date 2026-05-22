@@ -126,10 +126,10 @@
     },
     {
       "parameters": {
-        "fieldToSplitOut": "projects",
+        "fieldToSplitOut": "data.projects",
         "options": {}
       },
-      "id": "4caa8827-4e8a-4c1a-b982-9d6f60b112d7",
+      "id": "47393abc-c4ff-450b-ba7f-49bff4e3f673",
       "name": "Split Projects",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
@@ -356,12 +356,13 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\\nfor (let i = 0; i < items.length; i++) {\\n  const binaryData = await this.helpers.getBinaryDataBuffer(i, 'data');\\n  items[i].json = JSON.parse(binaryData.toString('utf8'));\\n}\\nreturn items;"
+        "operation": "fromJson",
+        "options": {}
       },
       "id": "6056e423-914a-4ba1-b9e6-b6c00005d2b9",
       "name": "Parse Master Profile",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
       "position": [
         19840,
         2448
