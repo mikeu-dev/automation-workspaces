@@ -1,44 +1,29 @@
 {
-  "name": "Auto Resume Tailoring Assistant (Core Workflow)",
+  "name": "Auto Resume Tailoring Assistant",
   "nodes": [
     {
-      "parameters": {},
-      "id": "trigger-ingest",
-      "name": "Ingest Trigger (Manual)",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [0, 0]
-    },
-    {
       "parameters": {
-        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/master_profile.json"
+        "updates": [
+          "message"
+        ]
       },
-      "id": "read-profile",
-      "name": "Read Master Profile",
-      "type": "n8n-nodes-base.readWriteFile",
+      "id": "trigger-telegram",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
-      "position": [220, 0]
+      "position": [
+        -200,
+        100
+      ]
     },
     {
       "parameters": {
-        "operation": "splitOutItems",
-        "fieldToSplitOut": "projects",
-        "options": {}
-      },
-      "id": "split-projects",
-      "name": "Split Projects",
-      "type": "n8n-nodes-base.itemLists",
-      "typeVersion": 3,
-      "position": [440, 0]
-    },
-    {
-      "parameters": {
-        "formTitle": "Input Job Description",
-        "formDescription": "Paste the target Job Description below. The AI will query the Qdrant RAG and generate a tailored DOCX resume.",
+        "formTitle": "Auto Resume Tailoring",
+        "formDescription": "Paste the target Job Description below.",
         "formFields": {
           "values": [
             {
-              "fieldLabel": "Job Description (Paste Here)",
+              "fieldLabel": "Job Description",
               "fieldName": "job_description",
               "fieldType": "textarea",
               "requiredField": true
@@ -50,7 +35,116 @@
       "name": "Web Form Trigger",
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2,
-      "position": [0, 200]
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message.text || '';\n} else if ($node['Web Form Trigger']) {\n  jd = $node['Web Form Trigger'].json.job_description || '';\n}\nreturn { json: { job_description: jd } };"
+      },
+      "id": "standardize-input",
+      "name": "Extract Job Description",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $json.job_description }}\"\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "id": "retrieve-embedding",
+      "name": "Get Embedding (Search)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        200,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/resume_projects/points/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vector\": {{ JSON.stringify($json.embedding.values) }},\n  \"limit\": 3,\n  \"with_payload\": true\n}",
+        "options": {}
+      },
+      "id": "retrieve-qdrant",
+      "name": "Search Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Extract Job Description').first().json.job_description } };"
+      },
+      "id": "format-context",
+      "name": "Format Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Tugas Anda adalah menulis ulang CV (Resume) profesional untuk disesuaikan dengan lowongan kerja (Job Description) berikut:\n\n{{ $json.job_description }}\n\nReferensi Proyek Anda yang Paling Relevan (RAG):\n{{ $json.context }}\n\nInstruksi:\n1. Buat 'summary' profil profesional maksimal 3 kalimat.\n2. Ekstrak proyek di atas, perbaiki tata bahasanya agar fokus pada dampak bisnis, dan sesuaikan dengan kata kunci dari Job Description.\n3. DILARANG MENGARANG FAKTA ATAU TEKNOLOGI YANG TIDAK ADA DI REFERENSI!\n\nOutput dalam format JSON murni TANPA markdown block:\n{\n  \"summary\": \"...\",\n  \"projects\": [\n    {\n      \"title\": \"...\",\n      \"link\": \"github.com/mikeu-dev\",\n      \"bullets\": [\"...\", \"...\"]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "generate-cv",
+      "name": "Generate CV AI",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        200
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OSc9NzRZIneNTY09",
+          "name": "Google Gemini API"
+        }
+      }
     },
     {
       "parameters": {
@@ -60,7 +154,10 @@
       "name": "Read DOCX Template",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
-      "position": [220, 200]
+      "position": [
+        1000,
+        200
+      ]
     },
     {
       "parameters": {
@@ -77,7 +174,7 @@
             },
             {
               "name": "data",
-              "value": "={ \"summary\": \"Contoh Summary AI\", \"projects\": [ { \"title\": \"Supplyra ERP\", \"link\": \"github.com\", \"bullets\": [\"Backend Node.js\", \"SvelteKit\"] } ] }"
+              "value": "={{ JSON.stringify($('Generate CV AI').first().json) }}"
             }
           ]
         },
@@ -87,29 +184,125 @@
       "name": "Call DOCX API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [440, 200]
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "Ingest Trigger (Manual)": {
-      "main": [
-        [{"node": "Read Master Profile", "type": "main", "index": 0}]
+      "position": [
+        1200,
+        200
       ]
     },
-    "Read Master Profile": {
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "document": "={{ $json.data }}",
+        "additionalFields": {}
+      },
+      "id": "send-telegram",
+      "name": "Send CV to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        1400,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
       "main": [
-        [{"node": "Split Projects", "type": "main", "index": 0}]
+        [
+          {
+            "node": "Extract Job Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Web Form Trigger": {
       "main": [
-        [{"node": "Read DOCX Template", "type": "main", "index": 0}]
+        [
+          {
+            "node": "Extract Job Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Job Description": {
+      "main": [
+        [
+          {
+            "node": "Get Embedding (Search)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Embedding (Search)": {
+      "main": [
+        [
+          {
+            "node": "Search Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Format Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Context": {
+      "main": [
+        [
+          {
+            "node": "Generate CV AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate CV AI": {
+      "main": [
+        [
+          {
+            "node": "Read DOCX Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Read DOCX Template": {
       "main": [
-        [{"node": "Call DOCX API", "type": "main", "index": 0}]
+        [
+          {
+            "node": "Call DOCX API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call DOCX API": {
+      "main": [
+        [
+          {
+            "node": "Send CV to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
