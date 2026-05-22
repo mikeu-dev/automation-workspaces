@@ -8,13 +8,13 @@
         ],
         "additionalFields": {}
       },
-      "id": "b48ae000-8e37-4733-958b-35500cad25ef",
+      "id": "e3f87b40-3591-4923-94c7-68b725ec0ee6",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        18736,
-        2336
+        63040,
+        8016
       ],
       "webhookId": "4083fb2f-4fc7-42a6-bbf1-133a8f368db3",
       "credentials": {
@@ -26,13 +26,13 @@
     },
     {
       "parameters": {},
-      "id": "767c9e5b-4433-4bb4-9760-d2245af9aed7",
+      "id": "d0280f2d-21fa-450c-b607-9a08d546a61a",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        18736,
-        2528
+        63040,
+        8208
       ]
     },
     {
@@ -47,13 +47,13 @@
         },
         "options": {}
       },
-      "id": "fffc3b58-8126-4918-89d3-9ebf07916a55",
+      "id": "63c3fdf7-587d-4a3d-8062-e40adb3b6eb7",
       "name": "Extract Telegram JD",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        18960,
-        2336
+        63264,
+        8016
       ]
     },
     {
@@ -68,13 +68,13 @@
         },
         "options": {}
       },
-      "id": "9f366baf-4f53-474c-8593-e00c8faab71a",
+      "id": "4738eceb-c0b9-4b76-98da-c362f13f08fb",
       "name": "Setup Job Deskripsi",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        18960,
-        2528
+        63264,
+        8208
       ]
     },
     {
@@ -82,13 +82,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "let jd = '';\ntry { jd = $('Extract Telegram JD').first()?.json?.job_description; } catch(e) {}\nif (!jd) {\n  try { jd = $('Setup Job Deskripsi').first()?.json?.job_description; } catch(e) {}\n}\nreturn { json: { job_description: jd || '' } };"
       },
-      "id": "16b146f5-4178-4867-9c9a-4c0e198fe60d",
+      "id": "54502763-8388-47c7-b7bf-54673e16bfc7",
       "name": "Save JD to Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        19184,
-        2336
+        63488,
+        8016
       ]
     },
     {
@@ -100,13 +100,13 @@
         "jsonBody": "{\n  \"vectors\": {\n    \"size\": 3072,\n    \"distance\": \"Cosine\"\n  }\n}",
         "options": {}
       },
-      "id": "fa89a44f-325b-4672-b832-72189b306e67",
+      "id": "5259fba6-412c-4057-97a8-6eb852f7a20d",
       "name": "Init Collection",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        19408,
-        2432
+        63712,
+        8112
       ],
       "continueOnFail": true
     },
@@ -115,13 +115,13 @@
         "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/master_profile.json",
         "options": {}
       },
-      "id": "75959b96-5ae4-4322-b56e-30ba5fc1b248",
+      "id": "d1d0359b-b54d-4d9b-a7cf-da25dd8f8b3c",
       "name": "Read Master Profile",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        19632,
-        2432
+        63936,
+        8112
       ]
     },
     {
@@ -129,13 +129,13 @@
         "fieldToSplitOut": "data.projects",
         "options": {}
       },
-      "id": "47393abc-c4ff-450b-ba7f-49bff4e3f673",
+      "id": "e7f6ba69-13cf-4e8d-a7c5-d78af9739cc8",
       "name": "Split Projects",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        20064,
-        2432
+        64368,
+        8112
       ]
     },
     {
@@ -149,18 +149,18 @@
         "jsonBody": "={{ { model: 'models/gemini-embedding-001', content: { parts: [ { text: `Title: ${$json.title}\\nType: ${$json.type}\\nKeywords: ${($json.keywords || []).join(', ')}\\nStack: ${($json.stack || []).join(', ')}\\nBullets: ${($json.base_bullets || []).join('; ')}` } ] } } }}",
         "options": {}
       },
-      "id": "e0b917bb-82ae-4e03-86b8-6474a7d201d6",
+      "id": "a9b77062-5dce-4f65-ae02-de2f3bf49e85",
       "name": "Get Embedding (Ingest)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        20288,
-        2432
+        64592,
+        8112
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "Z6uR1vQizIK5oRtK",
-          "name": "Header Auth account"
+          "id": "x1mnS4hRHv42rlv5",
+          "name": "Header Auth account 2"
         }
       }
     },
@@ -173,26 +173,26 @@
         "jsonBody": "={{ { points: [ { id: $itemIndex + 1, vector: $json.embedding.values, payload: { title: $('Split Projects').all()[$itemIndex].json.title, stack: $('Split Projects').all()[$itemIndex].json.stack, bullets: $('Split Projects').all()[$itemIndex].json.base_bullets } } ] } }}",
         "options": {}
       },
-      "id": "d6b067e8-21a3-4bc4-8438-cecc77c5b408",
+      "id": "025258bb-7f79-4067-8dbd-64c32b739adc",
       "name": "Upsert to Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        20512,
-        2432
+        64816,
+        8112
       ]
     },
     {
       "parameters": {
         "operation": "limit"
       },
-      "id": "d5bb6c20-fc9b-4e35-a94a-abadbbe78638",
+      "id": "fdd0115b-e72f-40a4-a1bb-3f8dc245fb20",
       "name": "Limit to 1",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        20736,
-        2432
+        65040,
+        8112
       ]
     },
     {
@@ -206,18 +206,18 @@
         "jsonBody": "={{ { model: 'models/gemini-embedding-001', content: { parts: [ { text: $('Save JD to Context').first().json.job_description } ] } } }}",
         "options": {}
       },
-      "id": "a2885e09-0548-4590-9213-93031ff5455b",
+      "id": "a9812cb7-40a1-4519-b15b-0f1da1af0320",
       "name": "Get Embedding (Search)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        20960,
-        2432
+        65264,
+        8112
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "Z6uR1vQizIK5oRtK",
-          "name": "Header Auth account"
+          "id": "x1mnS4hRHv42rlv5",
+          "name": "Header Auth account 2"
         }
       }
     },
@@ -230,13 +230,13 @@
         "jsonBody": "={{ { vector: $json.embedding.values, limit: 3, with_payload: true } }}",
         "options": {}
       },
-      "id": "37fa23df-ec1c-42cc-9081-57cc38ae5e28",
+      "id": "b5738dce-8988-4722-bccb-50f5dd0a5716",
       "name": "Search Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        21184,
-        2432
+        65488,
+        8112
       ]
     },
     {
@@ -244,13 +244,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Save JD to Context').first().json.job_description } };"
       },
-      "id": "b41c0222-57ab-4bc0-adbb-eaf1b3ce0c6b",
+      "id": "f97df897-7ba3-4bb1-b5a2-c9d7a001dd10",
       "name": "Format Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        21408,
-        2432
+        65712,
+        8112
       ]
     },
     {
@@ -264,34 +264,33 @@
         "jsonBody": "={{ { contents: [ { parts: [ { text: `Tugas Anda adalah menulis ulang CV (Resume) profesional untuk disesuaikan dengan lowongan kerja (Job Description) berikut:\\n\\n${$json.job_description}\\n\\nReferensi Proyek Anda yang Paling Relevan (RAG):\\n${$json.context}\\n\\nInstruksi:\\n1. Buat 'summary' profil profesional maksimal 3 kalimat.\\n2. Ekstrak proyek di atas, perbaiki tata bahasanya agar fokus pada dampak bisnis, dan sesuaikan dengan kata kunci dari Job Description.\\n3. DILARANG MENGARANG FAKTA ATAU TEKNOLOGI YANG TIDAK ADA DI REFERENSI!\\n\\nOutput dalam format JSON murni TANPA markdown block:\\n{\\n  \"summary\": \"...\",\\n  \"projects\": [\\n    {\\n      \"title\": \"...\",\\n      \"link\": \"github.com/mikeu-dev\",\\n      \"bullets\": [\"...\", \"...\"]\\n    }\\n  ]\\n}` } ] } ], generationConfig: { responseMimeType: 'application/json' } } }}",
         "options": {}
       },
-      "id": "b9fa4f2f-feb8-4004-82e5-705fcedd25a4",
+      "id": "afe865a9-15ff-4ed8-aefd-2cf63e6f9a0f",
       "name": "Generate CV AI",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        21632,
-        2432
+        65936,
+        8112
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "Z6uR1vQizIK5oRtK",
-          "name": "Header Auth account"
+          "id": "x1mnS4hRHv42rlv5",
+          "name": "Header Auth account 2"
         }
       }
     },
     {
       "parameters": {
-        "operation": "read",
         "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/template.docx",
         "options": {}
       },
-      "id": "0484bfc5-b7c1-4d9d-b982-f7f8592188f3",
+      "id": "df3b425a-8268-49bc-bb9d-dd5963db5c51",
       "name": "Read DOCX Template",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        21984,
-        2432
+        66288,
+        8112
       ]
     },
     {
@@ -313,33 +312,40 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
       },
-      "id": "9cd879d7-2846-480b-a837-ac1e17429e98",
+      "id": "8f56a3a2-c400-43bf-8f96-11f0aec86b2a",
       "name": "Call DOCX API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        22208,
-        2432
+        66512,
+        8112
       ]
     },
     {
       "parameters": {
         "operation": "sendDocument",
-        "chatId": "={{ $('Telegram Trigger').isExecuted ? $('Telegram Trigger').first().json.message.chat.id : '' }}",
+        "chatId": "={{ $('Telegram Trigger').isExecuted ? $('Telegram Trigger').first().json.message.chat.id : '1461349686' }}",
         "file": "data",
         "additionalFields": {
           "caption": "Berhasil! Ini adalah CV Anda yang sudah disesuaikan."
         }
       },
-      "id": "01ad2a01-5833-4994-b73c-1a7ebfa5b113",
+      "id": "678aba91-dd50-4a68-bf3b-d531f6cc40d9",
       "name": "Send CV to Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        22432,
-        2432
+        66736,
+        8112
       ],
       "webhookId": "9423463d-70bc-4042-9906-c0e3e68b1146",
       "credentials": {
@@ -355,13 +361,13 @@
         "operation": "fromJson",
         "options": {}
       },
-      "id": "6056e423-914a-4ba1-b9e6-b6c00005d2b9",
+      "id": "69c076d3-d238-4900-a4fa-361182105b26",
       "name": "Parse Master Profile",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        19840,
-        2448
+        64144,
+        8128
       ]
     }
   ],
@@ -571,7 +577,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "8e99bc1e-958f-46f5-9bb3-9090b35b23b0",
+  "versionId": "ae441efc-d385-48c1-822d-cf91f0ead2ec",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3aa2e595fede4a88bb612474fed2384418081807a20da5c1e4164dd855e136f5"
