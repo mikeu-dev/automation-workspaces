@@ -1,0 +1,128 @@
+{
+  "profile": {
+    "name": "Riki Ruswandi",
+    "contact": { 
+      "email": "rikiruswandi28@gmail.com", 
+      "phone": "+6283126190383",
+      "linkedin": "linkedin.com/in/riki-ruswandi",
+      "portfolio": "www.mikeudev.my.id",
+      "github": "mikeu-dev" 
+    }
+  },
+  "headlines": [
+    "Fullstack Web Developer",
+    "Backend Software Engineer",
+    "GIS Developer"
+  ],
+  "strongest_points": [
+    "Enterprise Systems & ERP",
+    "Internal Business Applications",
+    "Government Platforms",
+    "GIS & Spatial Data Visualization",
+    "API Integrations"
+  ],
+  "skills": {
+    "strong": ["Laravel", "SvelteKit", "Next.js", "TypeScript", "JavaScript", "PHP", "Node.js", "MySQL", "PostgreSQL", "SQL Server", "Tailwind CSS", "Bootstrap"],
+    "medium": ["Docker", "Git", "GitHub Actions", "Nginx", "OpenLayers", "Leaflet", "Google Maps", "Firebase", "Zustand", "Redis"],
+    "basic": ["Kubernetes", "Prometheus", "Grafana", "BullMQ"]
+  },
+  "projects": [
+    {
+      "id": "work_1",
+      "title": "SiPerintis (Technical Approval System)",
+      "type": "professional",
+      "stack": ["Laravel", "MySQL", "Google reCAPTCHA"],
+      "keywords": ["government", "security", "approval system", "backend"],
+      "base_bullets": [
+        "Developed a Laravel & MySQL-based technical approval system (SiPerintis) for the Purwakarta District Environmental Agency.",
+        "Integrated regional APIs and Google reCAPTCHA to improve system security."
+      ]
+    },
+    {
+      "id": "work_2",
+      "title": "Purwakartakab Frontend Portal",
+      "type": "professional",
+      "stack": ["SvelteKit", "TypeScript", "OpenLayers"],
+      "keywords": ["frontend", "GIS", "spatial", "government", "portal"],
+      "base_bullets": [
+        "Developed the Purwakartakab frontend portal using SvelteKit & TypeScript.",
+        "Implemented API integration and OpenLayers-based spatial data visualization."
+      ]
+    },
+    {
+      "id": "work_3",
+      "title": "Company Internal ERP System",
+      "type": "professional",
+      "stack": ["SvelteKit", "Drizzle ORM", "MySQL", "Tailwind CSS"],
+      "keywords": ["ERP", "internal tool", "business processes", "fullstack"],
+      "base_bullets": [
+        "Developed the company's internal ERP system to support business processes.",
+        "Built using SvelteKit, Drizzle ORM, MySQL, and Tailwind CSS."
+      ]
+    },
+    {
+      "id": "work_4",
+      "title": "One Map Information System",
+      "type": "professional",
+      "stack": ["Laravel", "OpenLayers"],
+      "keywords": ["GIS", "management", "geographic data", "spatial"],
+      "base_bullets": [
+        "Building a One Map Information System for Purwakarta Regency based on Laravel and OpenLayers.",
+        "Focused on the management and visualization of geographic data."
+      ]
+    },
+    {
+      "id": "proj_1",
+      "title": "Supplyra ERP",
+      "type": "project",
+      "stack": ["SvelteKit 2", "TypeScript", "Tailwind CSS", "Node.js", "PostgreSQL", "Drizzle ORM", "Redis", "BullMQ"],
+      "keywords": ["ERP", "finance", "HR", "RBAC", "background jobs", "SSE", "real-time"],
+      "base_bullets": [
+        "Designed and developed a modular web-based ERP system for integrated business management, covering project management, finance, HR, and reporting modules.",
+        "Implemented backend services using Node.js, PostgreSQL, and Drizzle ORM with Redis caching and BullMQ for background job processing.",
+        "Developed role-based access control (RBAC), audit logging, and activity tracking for enterprise-level system security."
+      ]
+    },
+    {
+      "id": "proj_2",
+      "title": "CloudLab Environment",
+      "type": "project",
+      "stack": ["Docker", "Nginx", "Prometheus", "Grafana", "Kubernetes", "GitHub Actions"],
+      "keywords": ["DevOps", "cloud", "CI/CD", "infrastructure", "deployment"],
+      "base_bullets": [
+        "Built on-premises cloud environments using Docker, Nginx, Prometheus, and Grafana for production system simulations.",
+        "Implemented CI/CD pipelines using GitHub Actions for build and deployment automation.",
+        "Simulated deployment production using Kubernetes."
+      ]
+    },
+    {
+      "id": "proj_3",
+      "title": "Tikdrop",
+      "type": "project",
+      "stack": ["Next.js 16", "Turbopack", "Firebase", "Firestore", "Zustand"],
+      "keywords": ["PWA", "performance", "frontend", "i18n", "WCAG"],
+      "base_bullets": [
+        "Developed a high-performance Progressive Web Application (PWA) using Next.js 16.",
+        "Designed a modular system architecture with Firebase for user data synchronization and Zustand for state management.",
+        "Built a responsive web application with multilingual support (i18n) and accessibility compliance (WCAG principles)."
+      ]
+    },
+    {
+      "id": "proj_4",
+      "title": "Geovara",
+      "type": "project",
+      "stack": ["GeoJSON", "Turf.js", "OpenLayers", "Zod", "Web Workers"],
+      "keywords": ["GIS", "stateless", "spatial intelligence", "validation"],
+      "base_bullets": [
+        "Developed a stateless geospatial engineering web-based platform for professional GeoJSON processing and editing.",
+        "Optimized rendering performance using Web Workers to handle large GeoJSON datasets responsively (60fps).",
+        "Built a spatial intelligence layer using Turf.js for real-time geometry analysis."
+      ]
+    }
+  ],
+  "forbidden_claims": [
+    "Data Scientist",
+    "AI/ML Engineer",
+    "10+ years of experience"
+  ]
+}

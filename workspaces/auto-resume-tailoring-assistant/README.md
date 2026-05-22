@@ -4,7 +4,7 @@ An experimental n8n workflow designed to automatically tailor resumes based on s
 
 ## 🌟 Key Features
 
-1. **Factual Integrity**: Never invents experiences. All projects and skills are strictly pulled from the user's `core.json`.
+1. **Factual Integrity**: Never invents experiences. All projects and skills are strictly pulled from the user's `master_profile.json`.
 2. **Semantic Search (RAG)**: Uses Qdrant Vector Database to understand the meaning behind a job description and pull the 3 most relevant portfolio projects.
 3. **Dynamic DOCX Templating**: A built-in Python FastAPI microservice (`docxtpl_service`) to render MS Word documents natively. Supports infinite project loops and dynamic links without breaking MS Word styling.
 4. **Human-in-the-Loop**: Integrated with Telegram for manual review and approval before the final CV is generated.
@@ -23,7 +23,7 @@ The architecture is split into several interconnected components running via Doc
 ### Workflow Phases
 
 1. **Phase 1: Data Ingestion (One-off / Sync)**
-   - Reads the Master Profile (`core.json`).
+   - Reads the Master Profile (`master_profile.json`).
    - Generates embeddings for all projects and skills.
    - Upserts vectors to the `resume_projects` collection in Qdrant.
    
@@ -52,7 +52,7 @@ docker compose up -d --build
 This will start `n8n` (Port: 5678), `qdrant` (Port: 6333), and the `docx_engine` (Port: 8000).
 
 ### 3. Configure Master Profile
-Edit the `core.json` file in this workspace with your authentic professional details, skills, and projects. **This data serves as the Ground Truth for the AI.**
+Edit the `master_profile.json` file in this workspace with your authentic professional details, skills, and projects. **This data serves as the Ground Truth for the AI.**
 
 ### 4. Prepare Your CV Template
 1. Open `Riki_Ruswandi_CV_Dynamic.docx` in MS Word.
@@ -64,7 +64,7 @@ Edit the `core.json` file in this workspace with your authentic professional det
 ## 🛠 Usage in n8n
 
 Ensure you have created the two primary workflows in your n8n dashboard:
-1. **Ingestion Workflow**: Pushes data from `core.json` into Qdrant.
+1. **Ingestion Workflow**: Pushes data from `master_profile.json` into Qdrant.
 2. **Retrieval Workflow**: Connects Telegram -> Qdrant -> AI Agent -> DOCX Engine (`http://docx_engine:8000/render`) -> Telegram.
 
 *Happy Tailoring!*
