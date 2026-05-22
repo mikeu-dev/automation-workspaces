@@ -1,0 +1,52 @@
+{
+  "profile": {
+    "name": "Mike",
+    "contact": { "email": "mike@example.com", "github": "mikeudev" }
+  },
+  "headlines": [
+    "Fullstack Web Developer",
+    "Backend Software Engineer",
+    "Aspiring Software Engineer"
+  ],
+  "strongest_points": [
+    "Backend API Development",
+    "GIS systems",
+    "Workflow automation"
+  ],
+  "skills": {
+    "strong": ["Laravel", "SvelteKit", "Next.js", "REST API", "PostgreSQL", "Node.js"],
+    "medium": ["Docker", "CI/CD", "Redis", "TypeScript"],
+    "basic": ["AWS", "Kubernetes", "React Native"]
+  },
+  "projects": [
+    {
+      "id": "proj_1",
+      "title": "GIS Automation System",
+      "type": "professional",
+      "stack": ["Laravel", "PostGIS", "GeoServer", "PostgreSQL"],
+      "keywords": ["GIS", "automation", "internal tool", "spatial", "backend"],
+      "base_bullets": [
+        "Built internal GIS workflow system",
+        "Developed API integrations for spatial data processing",
+        "Improved internal business process efficiency through mapping automation"
+      ]
+    },
+    {
+      "id": "proj_2",
+      "title": "Mata Plat Engine",
+      "type": "project",
+      "stack": ["Python", "FastAPI", "Computer Vision"],
+      "keywords": ["ALPR", "engine", "performance", "backend"],
+      "base_bullets": [
+        "Developed core engine for automated license plate recognition",
+        "Optimized inference speed and accuracy"
+      ]
+    }
+  ],
+  "forbidden_claims": [
+    "Kubernetes expert",
+    "Cloud architect",
+    "Data Scientist",
+    "10 years of experience"
+  ]
+}
