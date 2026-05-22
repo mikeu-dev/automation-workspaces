@@ -170,7 +170,7 @@
         "url": "http://qdrant:6333/collections/resume_projects/points?wait=true",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { points: [ { id: $itemIndex + 1, vector: $json.embedding.values, payload: { title: $('Split Projects').all()[$itemIndex].json.title, stack: $('Split Projects').all()[$itemIndex].json.stack, bullets: $('Split Projects').all()[$itemIndex].json.base_bullets } } ] } }}",
+        "jsonBody": "={{ { points: [ { id: $itemIndex + 1, vector: $json.embedding.values, payload: { title: $('Split Projects').item.json.title, stack: $('Split Projects').item.json.stack, bullets: $('Split Projects').item.json.base_bullets } } ] } }}",
         "options": {}
       },
       "id": "025258bb-7f79-4067-8dbd-64c32b739adc",
