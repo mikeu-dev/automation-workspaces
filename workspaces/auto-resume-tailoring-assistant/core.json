@@ -17,24 +17,11 @@
       ]
     },
     {
-      "parameters": {
-        "formTitle": "Auto Resume Tailoring",
-        "formDescription": "Paste the target Job Description below.",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Job Description",
-              "fieldName": "job_description",
-              "fieldType": "textarea",
-              "requiredField": true
-            }
-          ]
-        }
-      },
+      "parameters": {},
       "id": "trigger-form",
-      "name": "Web Form Trigger",
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2,
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
       "position": [
         -200,
         300
@@ -43,7 +30,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message.text || '';\n} else if ($node['Web Form Trigger']) {\n  jd = $node['Web Form Trigger'].json.job_description || '';\n}\nreturn { json: { job_description: jd } };"
+        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message?.text || '';\n} \nif (!jd && $node['Manual Trigger']) {\n  // If manual trigger has mock data or if user put fields in it\n  jd = $json.job_description || $node['Manual Trigger'].json.job_description || 'Masukkan Job Description di Mock Data Manual Trigger';\n}\nreturn { json: { job_description: jd } };"
       },
       "id": "standardize-input",
       "name": "Extract Job Description",
@@ -217,17 +204,6 @@
         ]
       ]
     },
-    "Web Form Trigger": {
-      "main": [
-        [
-          {
-            "node": "Extract Job Description",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Extract Job Description": {
       "main": [
         [
@@ -299,6 +275,17 @@
         [
           {
             "node": "Send CV to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Description",
             "type": "main",
             "index": 0
           }
