@@ -146,7 +146,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": {{ JSON.stringify(\"Title: \" + $json.title + \"\\nType: \" + $json.type + \"\\nKeywords: \" + ($json.keywords || []).join(', ') + \"\\nStack: \" + ($json.stack || []).join(', ') + \"\\nBullets: \" + ($json.base_bullets || []).join('; ')) }}\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": `Title: ${$json.title}\\nType: ${$json.type}\\nKeywords: ${($json.keywords || []).join(', ')}\\nStack: ${($json.stack || []).join(', ')}\\nBullets: ${($json.base_bullets || []).join('; ')}`\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "e0b917bb-82ae-4e03-86b8-6474a7d201d6",
@@ -203,7 +203,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": {{ JSON.stringify($('Save JD to Context').first().json.job_description) }}\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": $('Save JD to Context').first().json.job_description\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "a2885e09-0548-4590-9213-93031ff5455b",
@@ -261,7 +261,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Tugas Anda adalah menulis ulang CV (Resume) profesional untuk disesuaikan dengan lowongan kerja (Job Description) berikut:\\n\\n\" + $json.job_description + \"\\n\\nReferensi Proyek Anda yang Paling Relevan (RAG):\\n\" + $json.context + \"\\n\\nInstruksi:\\n1. Buat 'summary' profil profesional maksimal 3 kalimat.\\n2. Ekstrak proyek di atas, perbaiki tata bahasanya agar fokus pada dampak bisnis, dan sesuaikan dengan kata kunci dari Job Description.\\n3. DILARANG MENGARANG FAKTA ATAU TEKNOLOGI YANG TIDAK ADA DI REFERENSI!\\n\\nOutput dalam format JSON murni TANPA markdown block:\\n{\\n  \\\"summary\\\": \\\"...\\\",\\n  \\\"projects\\\": [\\n    {\\n      \\\"title\\\": \\\"...\\\",\\n      \\\"link\\\": \\\"github.com/mikeu-dev\\\",\\n      \\\"bullets\\\": [\\\"...\\\", \\\"...\\\"]\\n    }\\n  ]\\n}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": `Tugas Anda adalah menulis ulang CV (Resume) profesional untuk disesuaikan dengan lowongan kerja (Job Description) berikut:\\n\\n${$json.job_description}\\n\\nReferensi Proyek Anda yang Paling Relevan (RAG):\\n${$json.context}\\n\\nInstruksi:\\n1. Buat 'summary' profil profesional maksimal 3 kalimat.\\n2. Ekstrak proyek di atas, perbaiki tata bahasanya agar fokus pada dampak bisnis, dan sesuaikan dengan kata kunci dari Job Description.\\n3. DILARANG MENGARANG FAKTA ATAU TEKNOLOGI YANG TIDAK ADA DI REFERENSI!\\n\\nOutput dalam format JSON murni TANPA markdown block:\\n{\\n  \"summary\": \"...\",\\n  \"projects\": [\\n    {\\n      \"title\": \"...\",\\n      \"link\": \"github.com/mikeu-dev\",\\n      \"bullets\": [\"...\", \"...\"]\\n    }\\n  ]\\n}`\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\"\n  }\n}",
         "options": {}
       },
       "id": "b9fa4f2f-feb8-4004-82e5-705fcedd25a4",
