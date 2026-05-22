@@ -12,7 +12,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        0,
+        -200,
         100
       ]
     },
@@ -23,6 +23,48 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "job_description",
+              "value": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-telegram",
+      "name": "Extract Telegram JD",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        0,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "job_description",
+              "value": "Dibutuhkan seorang Fullstack Web Developer (Node.js & SvelteKit) dengan pengalaman minimal 3 tahun. Harus menguasai PostgreSQL dan Docker."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-jd",
+      "name": "Setup Job Deskripsi",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
         0,
         300
       ]
@@ -30,10 +72,10 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "let jd = '';\nif ($node['Telegram Trigger']) {\n  jd = $node['Telegram Trigger'].json.message?.text || '';\n}\nif (!jd && $node['Manual Trigger']) {\n  jd = $json.job_description || $node['Manual Trigger'].json.job_description || 'Masukkan Job Description di Mock Data Manual Trigger';\n}\nreturn { json: { job_description: jd } };"
+        "jsCode": "const jd = $('Extract Telegram JD').first()?.json?.job_description || $('Setup Job Deskripsi').first()?.json?.job_description || '';\nreturn { json: { job_description: jd } };"
       },
-      "id": "extract-jd",
-      "name": "Extract JD",
+      "id": "merge-jd",
+      "name": "Save JD to Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -153,7 +195,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Extract JD').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Save JD to Context').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "retrieve-embedding",
@@ -192,7 +234,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Extract JD').first().json.job_description } };"
+        "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Save JD to Context').first().json.job_description } };"
       },
       "id": "format-context",
       "name": "Format Context",
@@ -279,6 +321,22 @@
         2600,
         200
       ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "document": "={{ $json.data }}",
+        "additionalFields": {}
+      },
+      "id": "send-telegram",
+      "name": "Send CV to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.1,
+      "position": [
+        2800,
+        200
+      ],
+      "continueOnFail": true
     }
   ],
   "connections": {
@@ -286,7 +344,7 @@
       "main": [
         [
           {
-            "node": "Extract JD",
+            "node": "Extract Telegram JD",
             "type": "main",
             "index": 0
           }
@@ -297,14 +355,36 @@
       "main": [
         [
           {
-            "node": "Extract JD",
+            "node": "Setup Job Deskripsi",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract JD": {
+    "Extract Telegram JD": {
+      "main": [
+        [
+          {
+            "node": "Save JD to Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setup Job Deskripsi": {
+      "main": [
+        [
+          {
+            "node": "Save JD to Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save JD to Context": {
       "main": [
         [
           {
@@ -430,6 +510,17 @@
         [
           {
             "node": "Call DOCX API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call DOCX API": {
+      "main": [
+        [
+          {
+            "node": "Send CV to Telegram",
             "type": "main",
             "index": 0
           }
