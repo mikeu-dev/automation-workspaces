@@ -5,26 +5,34 @@
       "parameters": {
         "updates": [
           "message"
-        ]
+        ],
+        "additionalFields": {}
       },
-      "id": "trigger-telegram",
+      "id": "5333670f-e65e-45bf-b18d-5a3b0c50038c",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        -200,
-        100
-      ]
+        7024,
+        1104
+      ],
+      "webhookId": "4083fb2f-4fc7-42a6-bbf1-133a8f368db3",
+      "credentials": {
+        "telegramApi": {
+          "id": "na4i2ZAxzDExTKOH",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "parameters": {},
-      "id": "trigger-manual",
+      "id": "71765f73-0d03-4b50-b212-bdac548683d6",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -200,
-        300
+        7024,
+        1296
       ]
     },
     {
@@ -39,13 +47,13 @@
         },
         "options": {}
       },
-      "id": "extract-telegram",
+      "id": "44890801-4d5a-472b-8d28-8b3ea6eb2955",
       "name": "Extract Telegram JD",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        0,
-        100
+        7248,
+        1104
       ]
     },
     {
@@ -60,13 +68,13 @@
         },
         "options": {}
       },
-      "id": "set-jd",
+      "id": "3dd1b88b-179c-488e-80ea-df0967d1353a",
       "name": "Setup Job Deskripsi",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        0,
-        300
+        7248,
+        1296
       ]
     },
     {
@@ -74,13 +82,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const jd = $('Extract Telegram JD').first()?.json?.job_description || $('Setup Job Deskripsi').first()?.json?.job_description || '';\nreturn { json: { job_description: jd } };"
       },
-      "id": "merge-jd",
+      "id": "43e89146-4310-472a-a873-a853c2d25a68",
       "name": "Save JD to Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        200,
-        200
+        7472,
+        1104
       ]
     },
     {
@@ -92,42 +100,42 @@
         "jsonBody": "{\n  \"vectors\": {\n    \"size\": 768,\n    \"distance\": \"Cosine\"\n  }\n}",
         "options": {}
       },
-      "id": "init-qdrant",
+      "id": "3e488d11-4dad-4115-b28a-6a4a56c6431c",
       "name": "Init Collection",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        400,
-        200
+        7696,
+        1200
       ],
       "continueOnFail": true
     },
     {
       "parameters": {
-        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/master_profile.json"
+        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/master_profile.json",
+        "options": {}
       },
-      "id": "read-profile",
+      "id": "f55f1269-31f5-4b19-93ac-1dc87d30c090",
       "name": "Read Master Profile",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        600,
-        200
+        7920,
+        1200
       ]
     },
     {
       "parameters": {
-        "operation": "splitOutItems",
         "fieldToSplitOut": "projects",
         "options": {}
       },
-      "id": "split-projects",
+      "id": "47393abc-c4ff-450b-ba7f-49bff4e3f673",
       "name": "Split Projects",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        800,
-        200
+        8344,
+        1200
       ]
     },
     {
@@ -141,18 +149,18 @@
         "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"Title: {{ $json.title }}\\nType: {{ $json.type }}\\nKeywords: {{ ($json.keywords || []).join(', ') }}\\nStack: {{ ($json.stack || []).join(', ') }}\\nBullets: {{ ($json.base_bullets || []).join('; ') }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
-      "id": "ingest-embedding",
+      "id": "e041aa94-3e9d-46a4-8949-4504ed40fb82",
       "name": "Get Embedding (Ingest)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1000,
-        200
+        8568,
+        1200
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "OSc9NzRZIneNTY09",
-          "name": "Google Gemini API"
+          "id": "Z6uR1vQizIK5oRtK",
+          "name": "Header Auth account"
         }
       }
     },
@@ -165,26 +173,26 @@
         "jsonBody": "={\n  \"points\": [\n    {\n      \"id\": {{ $itemIndex + 1 }},\n      \"vector\": {{ JSON.stringify($json.embedding.values) }},\n      \"payload\": {\n        \"title\": \"{{ $json.title }}\",\n        \"stack\": {{ JSON.stringify($json.stack) }},\n        \"bullets\": {{ JSON.stringify($json.base_bullets) }}\n      }\n    }\n  ]\n}",
         "options": {}
       },
-      "id": "ingest-qdrant",
+      "id": "7fa6e558-7ecb-4dcf-8e87-ec42c1bca044",
       "name": "Upsert to Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1200,
-        200
+        8792,
+        1200
       ]
     },
     {
       "parameters": {
         "operation": "limit"
       },
-      "id": "limit-1",
+      "id": "81140963-8681-4655-bb0e-0888d125e5e4",
       "name": "Limit to 1",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        1400,
-        200
+        9016,
+        1200
       ]
     },
     {
@@ -198,18 +206,18 @@
         "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Save JD to Context').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
-      "id": "retrieve-embedding",
+      "id": "03a85da4-3f00-48ed-b559-244b69f4a75d",
       "name": "Get Embedding (Search)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1600,
-        200
+        9240,
+        1200
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "OSc9NzRZIneNTY09",
-          "name": "Google Gemini API"
+          "id": "Z6uR1vQizIK5oRtK",
+          "name": "Header Auth account"
         }
       }
     },
@@ -222,13 +230,13 @@
         "jsonBody": "={\n  \"vector\": {{ JSON.stringify($json.embedding.values) }},\n  \"limit\": 3,\n  \"with_payload\": true\n}",
         "options": {}
       },
-      "id": "retrieve-qdrant",
+      "id": "7aa5d97f-d408-4ef9-9c09-a19c849d97dd",
       "name": "Search Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        1800,
-        200
+        9464,
+        1200
       ]
     },
     {
@@ -236,13 +244,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Save JD to Context').first().json.job_description } };"
       },
-      "id": "format-context",
+      "id": "5a8992fe-039b-4ef0-afde-e7399a6b1462",
       "name": "Format Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2000,
-        200
+        9688,
+        1200
       ]
     },
     {
@@ -264,32 +272,33 @@
         "builtInTools": {},
         "options": {}
       },
-      "id": "generate-cv",
+      "id": "32713b2f-c7e8-47a2-8ad8-8bbc7876fa0e",
       "name": "Generate CV AI",
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.2,
       "position": [
-        2200,
-        200
+        9912,
+        1200
       ],
       "credentials": {
         "googlePalmApi": {
-          "id": "OSc9NzRZIneNTY09",
-          "name": "Google Gemini API"
+          "id": "B3OCVIRGbW4IAbBm",
+          "name": "Google Gemini(PaLM) Api account"
         }
       }
     },
     {
       "parameters": {
-        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx"
+        "fileSelector": "/var/www/html/n8n/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx",
+        "options": {}
       },
-      "id": "read-docx",
+      "id": "8c820ec3-82e0-481f-9680-c1688ce1ced4",
       "name": "Read DOCX Template",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        2400,
-        200
+        10264,
+        1200
       ]
     },
     {
@@ -301,8 +310,8 @@
         "bodyParameters": {
           "parameters": [
             {
-              "name": "template",
               "parameterType": "formBinaryData",
+              "name": "template",
               "inputDataFieldName": "data"
             },
             {
@@ -313,32 +322,54 @@
         },
         "options": {}
       },
-      "id": "call-api",
+      "id": "d120dc07-24b4-4e7d-979e-e4e372bec231",
       "name": "Call DOCX API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        2600,
-        200
+        10488,
+        1200
       ]
     },
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
-        "document": "={{ $json.data }}",
+        "text": "berhasil!",
         "additionalFields": {}
       },
-      "id": "send-telegram",
+      "id": "3318e917-a2e6-442e-9597-4c3b06785950",
       "name": "Send CV to Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        2800,
-        200
+        10712,
+        1200
       ],
+      "webhookId": "9423463d-70bc-4042-9906-c0e3e68b1146",
+      "credentials": {
+        "telegramApi": {
+          "id": "na4i2ZAxzDExTKOH",
+          "name": "Telegram account"
+        }
+      },
       "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "extract",
+        "format": "json"
+      },
+      "id": "parse-json-node",
+      "name": "Parse Master Profile",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        8020,
+        1200
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Telegram Trigger": {
       "main": [
@@ -377,7 +408,7 @@
       "main": [
         [
           {
-            "node": "Save JD to Context",
+            "node": "Init Collection",
             "type": "main",
             "index": 0
           }
@@ -410,7 +441,7 @@
       "main": [
         [
           {
-            "node": "Split Projects",
+            "node": "Parse Master Profile",
             "type": "main",
             "index": 0
           }
@@ -526,11 +557,29 @@
           }
         ]
       ]
+    },
+    "Parse Master Profile": {
+      "main": [
+        [
+          {
+            "node": "Split Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   },
-  "versionId": "f784bc22-b062-4f36-a83a-79b8a92f0dc3"
+  "versionId": "236cb0f2-ee97-4165-b836-24ed87fc61ae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3aa2e595fede4a88bb612474fed2384418081807a20da5c1e4164dd855e136f5"
+  },
+  "id": "RH79y9iM7ystB5eu",
+  "tags": []
 }
