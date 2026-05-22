@@ -8,13 +8,13 @@
         ],
         "additionalFields": {}
       },
-      "id": "5333670f-e65e-45bf-b18d-5a3b0c50038c",
+      "id": "b48ae000-8e37-4733-958b-35500cad25ef",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
-        7024,
-        1104
+        18736,
+        2336
       ],
       "webhookId": "4083fb2f-4fc7-42a6-bbf1-133a8f368db3",
       "credentials": {
@@ -26,13 +26,13 @@
     },
     {
       "parameters": {},
-      "id": "71765f73-0d03-4b50-b212-bdac548683d6",
+      "id": "767c9e5b-4433-4bb4-9760-d2245af9aed7",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        7024,
-        1296
+        18736,
+        2528
       ]
     },
     {
@@ -47,13 +47,13 @@
         },
         "options": {}
       },
-      "id": "44890801-4d5a-472b-8d28-8b3ea6eb2955",
+      "id": "fffc3b58-8126-4918-89d3-9ebf07916a55",
       "name": "Extract Telegram JD",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        7248,
-        1104
+        18960,
+        2336
       ]
     },
     {
@@ -68,13 +68,13 @@
         },
         "options": {}
       },
-      "id": "3dd1b88b-179c-488e-80ea-df0967d1353a",
+      "id": "9f366baf-4f53-474c-8593-e00c8faab71a",
       "name": "Setup Job Deskripsi",
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        7248,
-        1296
+        18960,
+        2528
       ]
     },
     {
@@ -82,13 +82,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const jd = $('Extract Telegram JD').first()?.json?.job_description || $('Setup Job Deskripsi').first()?.json?.job_description || '';\nreturn { json: { job_description: jd } };"
       },
-      "id": "43e89146-4310-472a-a873-a853c2d25a68",
+      "id": "16b146f5-4178-4867-9c9a-4c0e198fe60d",
       "name": "Save JD to Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        7472,
-        1104
+        19184,
+        2336
       ]
     },
     {
@@ -100,13 +100,13 @@
         "jsonBody": "{\n  \"vectors\": {\n    \"size\": 768,\n    \"distance\": \"Cosine\"\n  }\n}",
         "options": {}
       },
-      "id": "3e488d11-4dad-4115-b28a-6a4a56c6431c",
+      "id": "fa89a44f-325b-4672-b832-72189b306e67",
       "name": "Init Collection",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        7696,
-        1200
+        19408,
+        2432
       ],
       "continueOnFail": true
     },
@@ -115,13 +115,13 @@
         "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/master_profile.json",
         "options": {}
       },
-      "id": "f55f1269-31f5-4b19-93ac-1dc87d30c090",
+      "id": "75959b96-5ae4-4322-b56e-30ba5fc1b248",
       "name": "Read Master Profile",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        7920,
-        1200
+        19632,
+        2432
       ]
     },
     {
@@ -129,13 +129,13 @@
         "fieldToSplitOut": "projects",
         "options": {}
       },
-      "id": "47393abc-c4ff-450b-ba7f-49bff4e3f673",
+      "id": "4caa8827-4e8a-4c1a-b982-9d6f60b112d7",
       "name": "Split Projects",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        8344,
-        1200
+        20064,
+        2432
       ]
     },
     {
@@ -149,13 +149,13 @@
         "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"Title: {{ $json.title }}\\nType: {{ $json.type }}\\nKeywords: {{ ($json.keywords || []).join(', ') }}\\nStack: {{ ($json.stack || []).join(', ') }}\\nBullets: {{ ($json.base_bullets || []).join('; ') }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
-      "id": "e041aa94-3e9d-46a4-8949-4504ed40fb82",
+      "id": "e0b917bb-82ae-4e03-86b8-6474a7d201d6",
       "name": "Get Embedding (Ingest)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        8568,
-        1200
+        20288,
+        2432
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -173,26 +173,26 @@
         "jsonBody": "={\n  \"points\": [\n    {\n      \"id\": {{ $itemIndex + 1 }},\n      \"vector\": {{ JSON.stringify($json.embedding.values) }},\n      \"payload\": {\n        \"title\": \"{{ $json.title }}\",\n        \"stack\": {{ JSON.stringify($json.stack) }},\n        \"bullets\": {{ JSON.stringify($json.base_bullets) }}\n      }\n    }\n  ]\n}",
         "options": {}
       },
-      "id": "7fa6e558-7ecb-4dcf-8e87-ec42c1bca044",
+      "id": "d6b067e8-21a3-4bc4-8438-cecc77c5b408",
       "name": "Upsert to Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        8792,
-        1200
+        20512,
+        2432
       ]
     },
     {
       "parameters": {
         "operation": "limit"
       },
-      "id": "81140963-8681-4655-bb0e-0888d125e5e4",
+      "id": "d5bb6c20-fc9b-4e35-a94a-abadbbe78638",
       "name": "Limit to 1",
       "type": "n8n-nodes-base.itemLists",
       "typeVersion": 3,
       "position": [
-        9016,
-        1200
+        20736,
+        2432
       ]
     },
     {
@@ -206,13 +206,13 @@
         "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      {\n        \"text\": \"{{ $('Save JD to Context').first().json.job_description }}\"\n      }\n    ]\n  }\n}",
         "options": {}
       },
-      "id": "03a85da4-3f00-48ed-b559-244b69f4a75d",
+      "id": "a2885e09-0548-4590-9213-93031ff5455b",
       "name": "Get Embedding (Search)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        9240,
-        1200
+        20960,
+        2432
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -230,13 +230,13 @@
         "jsonBody": "={\n  \"vector\": {{ JSON.stringify($json.embedding.values) }},\n  \"limit\": 3,\n  \"with_payload\": true\n}",
         "options": {}
       },
-      "id": "7aa5d97f-d408-4ef9-9c09-a19c849d97dd",
+      "id": "37fa23df-ec1c-42cc-9081-57cc38ae5e28",
       "name": "Search Qdrant",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        9464,
-        1200
+        21184,
+        2432
       ]
     },
     {
@@ -244,13 +244,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const result = $json.result || [];\nconst context = result.map(hit => `Project: ${hit.payload.title}\\nStack: ${(hit.payload.stack||[]).join(', ')}\\nBullets:\\n- ${(hit.payload.bullets||[]).join('\\n- ')}`).join('\\n\\n---\\n\\n');\nreturn { json: { context: context || \"No projects found.\", job_description: $('Save JD to Context').first().json.job_description } };"
       },
-      "id": "5a8992fe-039b-4ef0-afde-e7399a6b1462",
+      "id": "b41c0222-57ab-4bc0-adbb-eaf1b3ce0c6b",
       "name": "Format Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        9688,
-        1200
+        21408,
+        2432
       ]
     },
     {
@@ -272,13 +272,13 @@
         "builtInTools": {},
         "options": {}
       },
-      "id": "32713b2f-c7e8-47a2-8ad8-8bbc7876fa0e",
+      "id": "b9fa4f2f-feb8-4004-82e5-705fcedd25a4",
       "name": "Generate CV AI",
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1.2,
       "position": [
-        9912,
-        1200
+        21632,
+        2432
       ],
       "credentials": {
         "googlePalmApi": {
@@ -292,13 +292,13 @@
         "fileSelector": "/home/node/.n8n-files/workspaces/auto-resume-tailoring-assistant/Riki_Ruswandi_CV_Dynamic.docx",
         "options": {}
       },
-      "id": "8c820ec3-82e0-481f-9680-c1688ce1ced4",
+      "id": "0484bfc5-b7c1-4d9d-b982-f7f8592188f3",
       "name": "Read DOCX Template",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        10264,
-        1200
+        21984,
+        2432
       ]
     },
     {
@@ -322,13 +322,13 @@
         },
         "options": {}
       },
-      "id": "d120dc07-24b4-4e7d-979e-e4e372bec231",
+      "id": "9cd879d7-2846-480b-a837-ac1e17429e98",
       "name": "Call DOCX API",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        10488,
-        1200
+        22208,
+        2432
       ]
     },
     {
@@ -337,13 +337,13 @@
         "text": "berhasil!",
         "additionalFields": {}
       },
-      "id": "3318e917-a2e6-442e-9597-4c3b06785950",
+      "id": "01ad2a01-5833-4994-b73c-1a7ebfa5b113",
       "name": "Send CV to Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
       "position": [
-        10712,
-        1200
+        22432,
+        2432
       ],
       "webhookId": "9423463d-70bc-4042-9906-c0e3e68b1146",
       "credentials": {
@@ -356,16 +356,15 @@
     },
     {
       "parameters": {
-        "operation": "extract",
-        "format": "json"
+        "jsCode": "const items = $input.all();\\nfor (let i = 0; i < items.length; i++) {\\n  const binaryData = await this.helpers.getBinaryDataBuffer(i, 'data');\\n  items[i].json = JSON.parse(binaryData.toString('utf8'));\\n}\\nreturn items;"
       },
-      "id": "parse-json-node",
+      "id": "6056e423-914a-4ba1-b9e6-b6c00005d2b9",
       "name": "Parse Master Profile",
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        8020,
-        1200
+        19840,
+        2448
       ]
     }
   ],
@@ -575,7 +574,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "236cb0f2-ee97-4165-b836-24ed87fc61ae",
+  "versionId": "8e99bc1e-958f-46f5-9bb3-9090b35b23b0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3aa2e595fede4a88bb612474fed2384418081807a20da5c1e4164dd855e136f5"
