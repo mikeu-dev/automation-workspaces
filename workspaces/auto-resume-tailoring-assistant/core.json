@@ -326,7 +326,7 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "chatId": "={{ $('Telegram Trigger').isExecuted ? $('Telegram Trigger').first().json.message.chat.id : '' }}",
         "text": "berhasil!",
         "additionalFields": {}
       },
