@@ -326,9 +326,12 @@
     },
     {
       "parameters": {
+        "operation": "sendDocument",
         "chatId": "={{ $('Telegram Trigger').isExecuted ? $('Telegram Trigger').first().json.message.chat.id : '' }}",
-        "text": "berhasil!",
-        "additionalFields": {}
+        "file": "data",
+        "additionalFields": {
+          "caption": "Berhasil! Ini adalah CV Anda yang sudah disesuaikan."
+        }
       },
       "id": "01ad2a01-5833-4994-b73c-1a7ebfa5b113",
       "name": "Send CV to Telegram",
